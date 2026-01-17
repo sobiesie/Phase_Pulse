@@ -5,6 +5,10 @@
 	"mixins": [
 		"ExampleMixin"
 	],
+	"client": [
+		"EatingMixin",
+		"DamageMixin"
+	],
 	"injectors": {
 		"defaultRequire": 1
 	},
