@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /s \"F:\\\\Minecraft_mod\\\\Phase_Pulse\\\\src\\\\main\" /b)",
+      "Bash(unzip:*)",
+      "WebSearch",
+      "Bash(./gradlew build:*)"
+    ]
+  }
+}
