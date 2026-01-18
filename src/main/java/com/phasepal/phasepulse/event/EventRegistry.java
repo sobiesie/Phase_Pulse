@@ -41,73 +41,74 @@ public class EventRegistry {
         PhasePulseConfig config = ConfigManager.getConfig();
         PhasePulse.LOGGER.info("Registering event listeners...");
 
-        // Player state events
+        // Initialize monitors based on configuration
         if (config.sendPlayerEvents) {
             healthMonitor = new HealthMonitor();
             hungerMonitor = new HungerMonitor();
             drowningMonitor = new DrowningMonitor();
             sleepListener = new SleepListener();
-
-            // Register client tick for player monitoring
-            ClientTickEvents.END_CLIENT_TICK.register(client -> {
-                if (client.player != null) {
-                    healthMonitor.onClientTick(client);
-                    hungerMonitor.onClientTick(client);
-                    drowningMonitor.onClientTick(client);
-                }
-            });
-
-            // Sleep listener registers itself via Fabric events
             sleepListener.register();
-
             PhasePulse.LOGGER.info("Registered player state events");
         }
 
-        // World events
+        if (config.sendWeatherEvents) {
+            timeMonitor = new TimeMonitor();
+            weatherMonitor = new WeatherMonitor();
+        }
+
+        if (config.sendBiomeEvents) {
+            biomeTracker = new BiomeTracker();
+        }
+
         if (config.sendWeatherEvents || config.sendBiomeEvents) {
-            if (config.sendWeatherEvents) {
-                timeMonitor = new TimeMonitor();
-                weatherMonitor = new WeatherMonitor();
-            }
-
-            if (config.sendBiomeEvents) {
-                biomeTracker = new BiomeTracker();
-            }
-
-            // Register world tick for world monitoring
-            ClientTickEvents.END_CLIENT_TICK.register(client -> {
-                if (client.world != null && client.player != null) {
-                    if (config.sendWeatherEvents) {
-                        timeMonitor.onClientTick(client);
-                        weatherMonitor.onClientTick(client);
-                    }
-                    if (config.sendBiomeEvents) {
-                        biomeTracker.onClientTick(client);
-                    }
-                }
-            });
-
             PhasePulse.LOGGER.info("Registered world events");
         }
 
-        // Combat events
         if (config.sendCombatEvents) {
             combatTracker = new CombatTracker();
             hostileMobDetector = new HostileMobDetector();
-
-            // Register combat tracking
             combatTracker.register();
-
-            // Register combat tracker and hostile mob detection via client tick
-            ClientTickEvents.END_CLIENT_TICK.register(client -> {
-                if (client.player != null && client.world != null) {
-                    combatTracker.onClientTick();
-                    hostileMobDetector.onClientTick(client);
-                }
-            });
-
             PhasePulse.LOGGER.info("Registered combat events");
         }
+
+        // Single consolidated tick handler for all monitors (reduces per-tick overhead)
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (client.player == null) {
+                return;
+            }
+
+            // Player monitors
+            if (healthMonitor != null) {
+                healthMonitor.onClientTick(client);
+            }
+            if (hungerMonitor != null) {
+                hungerMonitor.onClientTick(client);
+            }
+            if (drowningMonitor != null) {
+                drowningMonitor.onClientTick(client);
+            }
+
+            // World monitors (require world)
+            if (client.world != null) {
+                if (timeMonitor != null) {
+                    timeMonitor.onClientTick(client);
+                }
+                if (weatherMonitor != null) {
+                    weatherMonitor.onClientTick(client);
+                }
+                if (biomeTracker != null) {
+                    biomeTracker.onClientTick(client);
+                }
+
+                // Combat monitors
+                if (combatTracker != null) {
+                    combatTracker.onClientTick();
+                }
+                if (hostileMobDetector != null) {
+                    hostileMobDetector.onClientTick(client);
+                }
+            }
+        });
 
         registered = true;
         PhasePulse.LOGGER.info("Event registration complete");
