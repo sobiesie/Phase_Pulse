@@ -1,5 +1,6 @@
 package com.phasepal.phasepulse;
 
+import com.phasepal.phasepulse.command.PalCommand;
 import com.phasepal.phasepulse.config.ConfigManager;
 import com.phasepal.phasepulse.config.PhasePulseConfig;
 import com.phasepal.phasepulse.event.EventRegistry;
@@ -25,6 +26,9 @@ public class PhasePulseClient implements ClientModInitializer {
 
             // Register event listeners
             EventRegistry.registerAll();
+
+            // Register /pal chat command
+            PalCommand.register();
         } else {
             PhasePulse.LOGGER.info("Phase_Pulse is disabled in configuration");
         }
