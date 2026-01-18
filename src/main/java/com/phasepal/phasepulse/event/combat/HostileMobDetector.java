@@ -35,36 +35,28 @@ public class HostileMobDetector {
         tickCounter = 0;
 
         // Create bounding box around player
-        Box searchBox = new Box(
-                client.player.getX() - DETECTION_RADIUS,
-                client.player.getY() - DETECTION_RADIUS,
-                client.player.getZ() - DETECTION_RADIUS,
-                client.player.getX() + DETECTION_RADIUS,
-                client.player.getY() + DETECTION_RADIUS,
-                client.player.getZ() + DETECTION_RADIUS
-        );
+        Box searchBox = client.player.getBoundingBox().expand(DETECTION_RADIUS);
 
-        // Find hostile entities in range
+        // Find hostile entities in range - single pass to count and get first type
         List<Entity> nearbyEntities = client.world.getOtherEntities(client.player, searchBox);
-        long hostileCount = nearbyEntities.stream()
-                .filter(entity -> entity instanceof HostileEntity)
-                .count();
+        int hostileCount = 0;
+        String firstMobType = null;
 
-        if (hostileCount > 0) {
-            // Find the closest hostile mob type
-            String mobType = nearbyEntities.stream()
-                    .filter(entity -> entity instanceof HostileEntity)
-                    .map(entity -> entity.getType().toString())
-                    .findFirst()
-                    .orElse("unknown");
-
-            if (debouncer.shouldTrigger("hostile_mob_nearby", DEBOUNCE_MS)) {
-                EventPacket packet = new EventPacket("hostile_mob_nearby")
-                        .addMetadata("mob_type", mobType)
-                        .addMetadata("count", hostileCount);
-
-                NetworkManager.getInstance().sendEvent(packet);
+        for (Entity entity : nearbyEntities) {
+            if (entity instanceof HostileEntity) {
+                hostileCount++;
+                if (firstMobType == null) {
+                    firstMobType = entity.getType().getTranslationKey();
+                }
             }
+        }
+
+        if (hostileCount > 0 && debouncer.shouldTrigger("hostile_mob_nearby", DEBOUNCE_MS)) {
+            EventPacket packet = new EventPacket("hostile_mob_nearby")
+                    .addMetadata("mob_type", firstMobType)
+                    .addMetadata("count", hostileCount);
+
+            NetworkManager.getInstance().sendEvent(packet);
         }
     }
 }
