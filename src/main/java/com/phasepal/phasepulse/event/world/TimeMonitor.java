@@ -14,14 +14,23 @@ public class TimeMonitor {
     private static final long DAY_END = 1000;
     private static final long NIGHT_START = 12000;
     private static final long NIGHT_END = 13000;
+    private static final int SAMPLE_INTERVAL = 20; // Check every 20 ticks (1 second)
 
     private final EventDebouncer debouncer = new EventDebouncer();
     private boolean isNight = false;
+    private int tickCounter = 0;
 
     public void onClientTick(MinecraftClient client) {
         if (client.world == null) {
             return;
         }
+
+        // Only sample every SAMPLE_INTERVAL ticks - time changes slowly
+        tickCounter++;
+        if (tickCounter < SAMPLE_INTERVAL) {
+            return;
+        }
+        tickCounter = 0;
 
         long timeOfDay = client.world.getTimeOfDay() % 24000;
         boolean shouldBeNight = timeOfDay >= 12000;
