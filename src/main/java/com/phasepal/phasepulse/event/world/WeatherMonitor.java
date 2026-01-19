@@ -9,8 +9,11 @@ import net.minecraft.client.MinecraftClient;
  * Monitors weather changes (clear, rain, thunder).
  */
 public class WeatherMonitor {
+    private static final int SAMPLE_INTERVAL = 20; // Check every 20 ticks (1 second)
+
     private final EventDebouncer debouncer = new EventDebouncer();
     private WeatherState lastWeather = WeatherState.CLEAR;
+    private int tickCounter = 0;
 
     private enum WeatherState {
         CLEAR,
@@ -22,6 +25,13 @@ public class WeatherMonitor {
         if (client.world == null) {
             return;
         }
+
+        // Only sample every SAMPLE_INTERVAL ticks - weather changes infrequently
+        tickCounter++;
+        if (tickCounter < SAMPLE_INTERVAL) {
+            return;
+        }
+        tickCounter = 0;
 
         WeatherState currentWeather;
         if (client.world.isThundering()) {
