@@ -13,6 +13,9 @@ public class PhasePulseConfig {
     public boolean sendCombatEvents = true;
     public boolean sendBiomeEvents = true;
     public boolean sendWeatherEvents = true;
+    public boolean sendChatMessages = true;
+    public int chatCommandCooldownMs = 1000;
+    public int maxChatMessageLength = 500;
     public int maxPacketsPerSecond = 5;
     public int connectionTimeoutMs = 5000;
     public boolean reconnectOnFailure = true;
@@ -45,6 +48,16 @@ public class PhasePulseConfig {
 
         // Validate connection timeout
         if (connectionTimeoutMs < 1000 || connectionTimeoutMs > 30000) {
+            return false;
+        }
+
+        // Validate chat command cooldown (100ms to 30 seconds)
+        if (chatCommandCooldownMs < 100 || chatCommandCooldownMs > 30000) {
+            return false;
+        }
+
+        // Validate max chat message length (10 to 2000 chars)
+        if (maxChatMessageLength < 10 || maxChatMessageLength > 2000) {
             return false;
         }
 

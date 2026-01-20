@@ -54,6 +54,7 @@ public class PacketSender implements Runnable {
 
     /**
      * Main thread loop - processes packet queue with rate limiting.
+     * Periodically attempts reconnection if disconnected.
      */
     @Override
     public void run() {
@@ -65,8 +66,22 @@ public class PacketSender implements Runnable {
 
         while (running.get()) {
             try {
-                // Wait for next packet (blocks until available)
-                EventPacket packet = packetQueue.take();
+                // Try to get a packet with timeout (5 seconds)
+                // This allows periodic reconnection attempts even when idle
+                EventPacket packet = packetQueue.poll(5, java.util.concurrent.TimeUnit.SECONDS);
+
+                // If no packet available, try to reconnect if disconnected
+                if (packet == null) {
+                    if (config.reconnectOnFailure && !connectionHandler.isConnected()) {
+                        connectionHandler.connect();
+                    }
+                    continue;
+                }
+
+                // Ensure we're connected before sending
+                if (!connectionHandler.isConnected() && config.reconnectOnFailure) {
+                    connectionHandler.connect();
+                }
 
                 // Rate limiting: enforce minimum time between packets
                 long now = System.currentTimeMillis();

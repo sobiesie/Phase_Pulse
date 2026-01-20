@@ -3,11 +3,15 @@
 	"package": "com.phasepal.phasepulse.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"ExampleMixin"
 	],
 	"client": [
 		"EatingMixin",
-		"DamageMixin"
+		"DamageMixin",
+		"AdvancementMixin",
+		"CraftingMixin",
+		"SleepMixin",
+		"TamingMixin",
+		"HorseTamingMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
