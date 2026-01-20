@@ -16,11 +16,36 @@ import java.util.List;
  */
 public class HostileMobDetector {
     private static final double DETECTION_RADIUS = 16.0;
+    private static final double COMBAT_RADIUS = 8.0; // Closer range for combat detection
     private static final int SCAN_INTERVAL = 40; // Ticks (2 seconds)
     private static final long DEBOUNCE_MS = 10000; // 10 seconds between notifications
 
     private final EventDebouncer debouncer = new EventDebouncer();
     private int tickCounter = 0;
+
+    /**
+     * Checks if there are hostile mobs within combat range of the player.
+     * Used to determine if damage should trigger combat state.
+     * @return true if hostile mobs are within COMBAT_RADIUS blocks
+     */
+    public static boolean areHostilesNearby() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.world == null || client.player == null) {
+            return false;
+        }
+
+        Box searchBox = new Box(
+                client.player.getX() - COMBAT_RADIUS,
+                client.player.getY() - COMBAT_RADIUS,
+                client.player.getZ() - COMBAT_RADIUS,
+                client.player.getX() + COMBAT_RADIUS,
+                client.player.getY() + COMBAT_RADIUS,
+                client.player.getZ() + COMBAT_RADIUS
+        );
+
+        return client.world.getOtherEntities(client.player, searchBox).stream()
+                .anyMatch(entity -> entity instanceof HostileEntity);
+    }
 
     public void onClientTick(MinecraftClient client) {
         if (client.world == null || client.player == null) {

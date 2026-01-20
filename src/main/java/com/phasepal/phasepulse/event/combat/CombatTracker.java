@@ -3,11 +3,6 @@ package com.phasepal.phasepulse.event.combat;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
 
 /**
  * Tracks combat state using damage events.
@@ -22,13 +17,8 @@ public class CombatTracker {
     private long lastDamageTime = 0;
 
     public void register() {
-        // Track when player takes damage to detect combat
-        ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
-            if (entity instanceof ServerPlayerEntity player) {
-                // We'll use a client-side approach instead via mixin or tick
-                // For now, we'll handle this in a different way
-            }
-        });
+        // Combat tracking is handled via DamageMixin calling onPlayerDamaged()
+        // No event registration needed here
     }
 
     /**

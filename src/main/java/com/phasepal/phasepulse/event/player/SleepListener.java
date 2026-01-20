@@ -5,13 +5,16 @@ import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
 
 /**
  * Listens for player sleep and wake events using Fabric API.
+ * Also handles sleep failure events via SleepMixin.
  */
 public class SleepListener {
     private final EventDebouncer debouncer = new EventDebouncer();
+
+    // Static debouncer for mixin callbacks
+    private static final EventDebouncer staticDebouncer = new EventDebouncer();
 
     public void register() {
         // Player starts sleeping
@@ -39,5 +42,29 @@ public class SleepListener {
                 }
             }
         });
+    }
+
+    /**
+     * Called from SleepMixin when a sleep attempt fails.
+     * @param reason The reason sleep failed
+     */
+    public static void onSleepFailed(PlayerEntity.SleepFailureReason reason) {
+        // Debounce to prevent spam (3 second cooldown for sleep failures)
+        if (!staticDebouncer.shouldTrigger("sleep_failed", 3000)) {
+            return;
+        }
+
+        // Use toString() to get the reason name
+        String reasonString = reason.toString().toLowerCase();
+        boolean isMonstersNearby = reasonString.contains("safe");
+
+        // Convert to readable string
+        String readableReason = reasonString.contains("safe") ? "monsters_nearby" : reasonString;
+
+        EventPacket packet = new EventPacket("sleep_failed")
+                .addMetadata("reason", readableReason)
+                .addMetadata("monsters_nearby", isMonstersNearby);
+
+        NetworkManager.getInstance().sendEvent(packet);
     }
 }

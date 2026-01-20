@@ -5,8 +5,10 @@ import com.phasepal.phasepulse.config.ConfigManager;
 import com.phasepal.phasepulse.config.PhasePulseConfig;
 import com.phasepal.phasepulse.event.combat.CombatTracker;
 import com.phasepal.phasepulse.event.combat.HostileMobDetector;
+import com.phasepal.phasepulse.event.combat.MobKilledListener;
 import com.phasepal.phasepulse.event.player.*;
 import com.phasepal.phasepulse.event.world.BiomeTracker;
+import com.phasepal.phasepulse.event.world.StructureTracker;
 import com.phasepal.phasepulse.event.world.TimeMonitor;
 import com.phasepal.phasepulse.event.world.WeatherMonitor;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -22,12 +24,21 @@ public class EventRegistry {
     private static HealthMonitor healthMonitor;
     private static HungerMonitor hungerMonitor;
     private static DrowningMonitor drowningMonitor;
+    private static HurtListener hurtListener;
     private static SleepListener sleepListener;
+    private static DeathListener deathListener;
+    private static StatusEffectListener statusEffectListener;
+    private static InventoryListener inventoryListener;
+    private static RareItemListener rareItemListener;
+    // private static BlockPlacedListener blockPlacedListener;
+    private static BlockBrokenListener blockBrokenListener;
     private static TimeMonitor timeMonitor;
     private static WeatherMonitor weatherMonitor;
     private static BiomeTracker biomeTracker;
+    private static StructureTracker structureTracker;
     private static CombatTracker combatTracker;
     private static HostileMobDetector hostileMobDetector;
+    private static MobKilledListener mobKilledListener;
 
     /**
      * Registers all event listeners based on configuration.
@@ -46,8 +57,21 @@ public class EventRegistry {
             healthMonitor = new HealthMonitor();
             hungerMonitor = new HungerMonitor();
             drowningMonitor = new DrowningMonitor();
+            hurtListener = new HurtListener();
             sleepListener = new SleepListener();
+            deathListener = new DeathListener();
+            statusEffectListener = new StatusEffectListener();
+            inventoryListener = new InventoryListener();
+            rareItemListener = new RareItemListener();
+            // blockPlacedListener = new BlockPlacedListener();
+            blockBrokenListener = new BlockBrokenListener();
+
+            // Register Fabric event listeners
             sleepListener.register();
+            deathListener.register();
+            // blockPlacedListener.register();
+            blockBrokenListener.register();
+
             PhasePulse.LOGGER.info("Registered player state events");
         }
 
@@ -58,6 +82,7 @@ public class EventRegistry {
 
         if (config.sendBiomeEvents) {
             biomeTracker = new BiomeTracker();
+            structureTracker = new StructureTracker();
         }
 
         if (config.sendWeatherEvents || config.sendBiomeEvents) {
@@ -67,7 +92,12 @@ public class EventRegistry {
         if (config.sendCombatEvents) {
             combatTracker = new CombatTracker();
             hostileMobDetector = new HostileMobDetector();
+            mobKilledListener = new MobKilledListener();
+
+            // Register combat tracking
             combatTracker.register();
+            mobKilledListener.register();
+
             PhasePulse.LOGGER.info("Registered combat events");
         }
 
@@ -87,6 +117,18 @@ public class EventRegistry {
             if (drowningMonitor != null) {
                 drowningMonitor.onClientTick(client);
             }
+            if (hurtListener != null) {
+                hurtListener.onClientTick(client);
+            }
+            if (statusEffectListener != null) {
+                statusEffectListener.onClientTick(client);
+            }
+            if (inventoryListener != null) {
+                inventoryListener.onClientTick(client);
+            }
+            if (rareItemListener != null) {
+                rareItemListener.onClientTick(client);
+            }
 
             // World monitors (require world)
             if (client.world != null) {
@@ -98,6 +140,9 @@ public class EventRegistry {
                 }
                 if (biomeTracker != null) {
                     biomeTracker.onClientTick(client);
+                }
+                if (structureTracker != null) {
+                    structureTracker.onClientTick(client);
                 }
 
                 // Combat monitors
@@ -130,12 +175,21 @@ public class EventRegistry {
         healthMonitor = null;
         hungerMonitor = null;
         drowningMonitor = null;
+        hurtListener = null;
         sleepListener = null;
+        deathListener = null;
+        statusEffectListener = null;
+        inventoryListener = null;
+        rareItemListener = null;
+        // blockPlacedListener = null;
+        blockBrokenListener = null;
         timeMonitor = null;
         weatherMonitor = null;
         biomeTracker = null;
+        structureTracker = null;
         combatTracker = null;
         hostileMobDetector = null;
+        mobKilledListener = null;
 
         registered = false;
         PhasePulse.LOGGER.info("Event listeners unregistered");
