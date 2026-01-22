@@ -11,7 +11,9 @@
       "Bash(find:*)",
       "Bash(dir /s /b \"F:\\\\Minecraft_mod\\\\Phase_Pulse\\\\.gradle\\\\loom-cache\")",
       "Bash(findstr:*)",
-      "WebFetch(domain:maven.fabricmc.net)"
+      "WebFetch(domain:maven.fabricmc.net)",
+      "Bash(ls -la \"F:\\\\Minecraft_mod\\\\Phase_Pulse\\\\src\\\\main\\\\resources\"\" | grep -v \"^d \")",
+      "Bash(dir \"F:\\\\Minecraft_mod\\\\Phase_Pulse\\\\src\\\\main\\\\java\\\\com\\\\phasepal\\\\phasepulse\\\\mixin\")"
     ]
   }
 }
