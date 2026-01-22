@@ -1,6 +1,6 @@
 # Phase_Pulse
 
-A lightweight Fabric mod for Minecraft 1.21.11 that bridges in-game events to the [Phase Pal](https://phasepal.com) desktop companion app. Sends real-time player and world events via local TCP to enable ambient companion reactions.
+A lightweight Fabric mod for Minecraft 1.21.1 that bridges in-game events to the [Phase Pal](https://phasepal.com) desktop companion app. Sends real-time player and world events via local TCP to enable ambient companion reactions.
 
 ## Features
 
@@ -11,9 +11,9 @@ A lightweight Fabric mod for Minecraft 1.21.11 that bridges in-game events to th
 
 ## Requirements
 
-- Minecraft 1.21.11
-- Fabric Loader 0.18.4+
-- Fabric API 0.141.1+1.21.11
+- Minecraft 1.21.1
+- Fabric Loader 0.16.5+
+- Fabric API 0.102.0+1.21.1
 - Java 21
 
 ## Installation
