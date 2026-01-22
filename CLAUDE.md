@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Phase_Pulse** is a lightweight Fabric mod for Minecraft 1.21.1 that bridges in-game events to the Phase Pal desktop companion app. The mod sends real-time player and world events via local TCP communication to enable ambient companionship reactions.
+**Phase_Pulse** is a lightweight Fabric mod for Minecraft 1.20.1 that bridges in-game events to the Phase Pal desktop companion app. The mod sends real-time player and world events via local TCP communication to enable ambient companionship reactions.
 
 **Key Constraints:**
 - Local-only communication (localhost/LAN, never cloud)
@@ -147,12 +147,12 @@ Prefer Fabric API events over mixins when available:
 
 ## Technical Requirements
 
-- **Java Version**: 21
-- **Minecraft Version**: 1.21.1
-- **Yarn Mappings**: 1.21.1+build.3
-- **Fabric Loader**: 0.16.5+
-- **Fabric API**: 0.102.0+1.21.1
-- **Loom Version**: 1.7-SNAPSHOT
+- **Java Version**: 17
+- **Minecraft Version**: 1.20.1
+- **Yarn Mappings**: 1.20.1+build.10
+- **Fabric Loader**: 0.14.21+
+- **Fabric API**: 0.92.2+1.20.1
+- **Loom Version**: 1.6-SNAPSHOT
 
 ## Performance Considerations
 
