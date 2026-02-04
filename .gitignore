@@ -38,3 +38,13 @@ hs_err_*.log
 replay_*.log
 *.hprof
 *.jfr
+
+# claude code
+
+.claude/
+
+# internal docs (not for public)
+
+CLAUDE.md
+PRD.md
+NEW_EVENTS.md

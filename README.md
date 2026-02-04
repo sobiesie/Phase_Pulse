@@ -100,8 +100,8 @@ See [EVENTS.md](EVENTS.md) for complete event documentation including:
 
 ```bash
 # Clone the repository
-git clone https://github.com/phasepal/phase-pulse.git
-cd phase-pulse
+git clone https://github.com/sobiesie/Phase_Pulse.git
+cd Phase_Pulse
 
 # Build the mod
 ./gradlew build
