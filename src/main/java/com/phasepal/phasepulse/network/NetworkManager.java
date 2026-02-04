@@ -3,6 +3,8 @@ package com.phasepal.phasepulse.network;
 import com.phasepal.phasepulse.PhasePulse;
 import com.phasepal.phasepulse.config.ConfigManager;
 import com.phasepal.phasepulse.config.PhasePulseConfig;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ServerInfo;
 
 /**
  * Singleton network manager for Phase_Pulse.
@@ -85,6 +87,7 @@ public class NetworkManager {
 
     /**
      * Sends an event with metadata to Phase Pal.
+     * Automatically injects world metadata into every packet.
      * @param packet The event packet to send
      */
     public void sendEvent(EventPacket packet) {
@@ -92,7 +95,47 @@ public class NetworkManager {
             return;
         }
 
+        // Inject world metadata
+        injectWorldMetadata(packet);
+
         packetSender.queuePacket(packet);
+    }
+
+    /**
+     * Injects world metadata into the packet.
+     * Adds world_name, world_type, and dimension to every event.
+     */
+    private void injectWorldMetadata(EventPacket packet) {
+        MinecraftClient client = MinecraftClient.getInstance();
+
+        if (client.world == null) {
+            return;
+        }
+
+        // Determine world name and type
+        String worldName;
+        String worldType;
+
+        ServerInfo serverInfo = client.getCurrentServerEntry();
+        if (serverInfo != null) {
+            // Multiplayer server
+            worldName = serverInfo.name;
+            worldType = "multiplayer";
+        } else if (client.isIntegratedServerRunning() && client.getServer() != null) {
+            // Singleplayer world
+            worldName = client.getServer().getSaveProperties().getLevelName();
+            worldType = "singleplayer";
+        } else {
+            worldName = "unknown";
+            worldType = "unknown";
+        }
+
+        // Get dimension (overworld, the_nether, the_end)
+        String dimension = client.world.getRegistryKey().getValue().getPath();
+
+        packet.addMetadata("world_name", worldName);
+        packet.addMetadata("world_type", worldType);
+        packet.addMetadata("dimension", dimension);
     }
 
     /**
