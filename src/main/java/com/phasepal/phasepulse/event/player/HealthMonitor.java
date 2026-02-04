@@ -25,7 +25,9 @@ public class HealthMonitor {
         float maxHealth = client.player.getMaxHealth();
         float healthPercent = health / maxHealth;
 
-        boolean isLowHealth = healthPercent < LOW_HEALTH_THRESHOLD;
+        // Health <= 0 means player is dead, not "low health"
+        // Suppress to avoid sending misleading events (PlayerDeath handles death)
+        boolean isLowHealth = health > 0 && healthPercent < LOW_HEALTH_THRESHOLD;
 
         // Trigger on transition to low health, or periodically while low
         if (isLowHealth && (!wasLowHealth || debouncer.shouldTrigger(EVENT_KEY, 10000))) {

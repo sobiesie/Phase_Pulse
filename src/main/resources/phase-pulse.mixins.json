@@ -11,7 +11,8 @@
 		"CraftingMixin",
 		"SleepMixin",
 		"TamingMixin",
-		"HorseTamingMixin"
+		"HorseTamingMixin",
+		"BlockBreakMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

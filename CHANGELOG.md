@@ -1,5 +1,64 @@
 # Changelog
 
+## 2026-02-04 - Client-Side Event Detection Migration
+
+### Server-to-Client Migration
+
+**Problem:** Several event listeners were using server-side Fabric API hooks (`ServerLivingEntityEvents.AFTER_DEATH`, `PlayerBlockBreakEvents.AFTER`) which don't fire reliably for client-side mods.
+
+**Solution:** Migrated to client-side detection patterns:
+
+#### MobKilledListener
+- Tracks entities attacked by player via `player.getAttacking()`
+- Monitors nearby entities for death state transitions
+- Adds `is_hostile` and `is_animal` metadata to events
+- Uses 16-block tracking range with 10-second timeout
+
+#### DeathListener
+- Monitors `player.isDead()` state transition each tick
+- Uses `getRecentDamageSource()` for death cause
+
+#### BlockBrokenListener
+- New `BlockBreakMixin` hooks into `ClientPlayerInteractionManager.breakBlock`
+- Listener converted to static method called from mixin
+
+### HealthMonitor Death Suppression
+
+**Problem:** When player dies (health = 0), `low_health` events were still being sent, which was misleading since `player_death` handles death.
+
+**Solution:** Added check to suppress low health events when `health <= 0`.
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `MobKilledListener.java` | Rewritten for client-side entity tracking |
+| `DeathListener.java` | Rewritten for client-side death detection |
+| `BlockBrokenListener.java` | Converted to static method for mixin |
+| `BlockBreakMixin.java` | New mixin for block break detection |
+| `EventRegistry.java` | Updated tick handlers and removed server registrations |
+| `HealthMonitor.java` | Suppress events when health <= 0 |
+| `phase-pulse.mixins.json` | Added BlockBreakMixin |
+
+---
+
+## 2026-02-03 - Hostile Mob Detection Fix
+
+### Cave Mob False Positives Fix
+
+**Problem:** Users reported receiving hostile mob alerts (e.g., creepers) when mobs were in caves below or above them, even though those mobs posed no immediate threat.
+
+**Root Cause:** `HostileMobDetector` used a uniform 16-block detection radius in all directions, including vertical. This meant mobs 16 blocks below in a cave would trigger alerts.
+
+**Solution:** Added separate vertical detection radius:
+
+- Horizontal detection: 16 blocks (unchanged)
+- Vertical detection: 4 blocks (reduced from 16)
+
+**Result:** Mob alerts now focus on mobs at similar elevation to the player, avoiding false positives from cave systems.
+
+---
+
 ## 2026-01-19 - Event Detection Fixes
 
 ### Biome Boundary Spam Fix
@@ -59,6 +118,6 @@
 |------|--------|
 | `BiomeTracker.java` | Added hysteresis + cooldown for boundary spam prevention |
 | `HurtListener.java` | Rewritten to use client-side hurtTime monitoring |
-| `HostileMobDetector.java` | Added `areHostilesNearby()` static method |
+| `HostileMobDetector.java` | Added `areHostilesNearby()` static method; limited vertical detection to 4 blocks |
 | `EventRegistry.java` | Added HurtListener registration |
 | `DamageMixin.java` | Simplified (client detection moved to HurtListener) |
