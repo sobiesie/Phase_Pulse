@@ -16,12 +16,23 @@ public class SleepListener {
     // Static debouncer for mixin callbacks
     private static final EventDebouncer staticDebouncer = new EventDebouncer();
 
+    // Track if player was sleeping (to detect actual sleep vs early exit)
+    private boolean wasInBed = false;
+    private long sleepStartTime = -1;
+
+    // Minecraft day cycle constants
+    private static final long MORNING_START = 0;
+    private static final long MORNING_END = 1000;
+
     public void register() {
         // Player starts sleeping
         EntitySleepEvents.START_SLEEPING.register((entity, sleepingPos) -> {
             if (entity instanceof PlayerEntity && entity.getEntityWorld().isClient()) {
+                long worldTime = entity.getEntityWorld().getTimeOfDay() % 24000;
+                wasInBed = true;
+                sleepStartTime = worldTime;
+
                 if (debouncer.shouldTrigger("player_sleep")) {
-                    long worldTime = entity.getEntityWorld().getTimeOfDay();
                     EventPacket packet = new EventPacket("player_sleep")
                             .addMetadata("world_time", worldTime);
 
@@ -33,13 +44,22 @@ public class SleepListener {
         // Player stops sleeping (wakes up)
         EntitySleepEvents.STOP_SLEEPING.register((entity, sleepingPos) -> {
             if (entity instanceof PlayerEntity && entity.getEntityWorld().isClient()) {
-                if (debouncer.shouldTrigger("player_wake")) {
-                    long worldTime = entity.getEntityWorld().getTimeOfDay();
+                long worldTime = entity.getEntityWorld().getTimeOfDay() % 24000;
+
+                // Only trigger wake event if player actually slept through the night
+                // (time is now morning and they were in bed)
+                boolean isNowMorning = worldTime >= MORNING_START && worldTime <= MORNING_END;
+                boolean actuallySlept = wasInBed && isNowMorning && sleepStartTime > MORNING_END;
+
+                if (actuallySlept && debouncer.shouldTrigger("player_wake")) {
                     EventPacket packet = new EventPacket("player_wake")
                             .addMetadata("world_time", worldTime);
 
                     NetworkManager.getInstance().sendEvent(packet);
                 }
+
+                wasInBed = false;
+                sleepStartTime = -1;
             }
         });
     }

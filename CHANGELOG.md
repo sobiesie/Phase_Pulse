@@ -1,5 +1,38 @@
 # Changelog
 
+## 2026-02-04 - Event Spam Fixes
+
+### State Monitor Spam Prevention
+
+**Problem:** `low_hunger`, `low_health`, and `drowning` events were re-triggering periodically (every 5-10 seconds) while the condition persisted, spamming Phase Pal.
+
+**Solution:** Removed periodic re-trigger behavior. Events now only fire once when the condition first occurs. The event will fire again only if the player recovers and then re-enters the low state.
+
+| Monitor | Previous Behavior | New Behavior |
+|---------|-------------------|--------------|
+| `HungerMonitor` | Re-fired every 10s while hungry | Fires once when hunger drops below 6 |
+| `HealthMonitor` | Re-fired every 10s while low | Fires once when health drops below 30% |
+| `DrowningMonitor` | Re-fired every 5s while drowning | Fires once when air drops below threshold |
+
+### Sleep Wake Event Fix
+
+**Problem:** `player_wake` event fired whenever the player left the bed, even if they didn't actually sleep through the night (e.g., got in bed then immediately got out).
+
+**Solution:** Added time-based validation:
+- Track when player enters bed (`sleepStartTime`)
+- Only fire `player_wake` if world time is now morning (0-1000 ticks) AND player started sleeping after morning
+
+**Files Changed:**
+
+| File | Change |
+|------|--------|
+| `HungerMonitor.java` | Removed debouncer, trigger only on state transition |
+| `HealthMonitor.java` | Removed debouncer, trigger only on state transition |
+| `DrowningMonitor.java` | Removed debouncer, trigger only on state transition |
+| `SleepListener.java` | Added time validation for actual sleep detection |
+
+---
+
 ## 2026-02-04 - Progression Tracking Events
 
 ### New Events for Progression System

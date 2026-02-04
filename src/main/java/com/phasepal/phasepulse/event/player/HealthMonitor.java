@@ -1,6 +1,5 @@
 package com.phasepal.phasepulse.event.player;
 
-import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import net.minecraft.client.MinecraftClient;
@@ -13,11 +12,11 @@ public class HealthMonitor {
     private static final float LOW_HEALTH_THRESHOLD = 0.3f; // 30% of max health
     private static final String EVENT_KEY = "low_health";
 
-    private final EventDebouncer debouncer = new EventDebouncer();
     private boolean wasLowHealth = false;
 
     public void onClientTick(MinecraftClient client) {
         if (client.player == null) {
+            wasLowHealth = false;
             return;
         }
 
@@ -29,8 +28,8 @@ public class HealthMonitor {
         // Suppress to avoid sending misleading events (PlayerDeath handles death)
         boolean isLowHealth = health > 0 && healthPercent < LOW_HEALTH_THRESHOLD;
 
-        // Trigger on transition to low health, or periodically while low
-        if (isLowHealth && (!wasLowHealth || debouncer.shouldTrigger(EVENT_KEY, 10000))) {
+        // Only trigger once when health first drops below threshold
+        if (isLowHealth && !wasLowHealth) {
             EventPacket packet = new EventPacket("low_health")
                     .addMetadata("health", Math.round(health * 10.0) / 10.0)
                     .addMetadata("maxHealth", Math.round(maxHealth * 10.0) / 10.0)
