@@ -1,5 +1,51 @@
 # Changelog
 
+## 2026-02-04 - Progression Tracking Events
+
+### New Events for Progression System
+
+Added new events to support Phase Pal's progression tracking feature.
+
+**New Events:**
+
+| Event | Metadata | Description |
+|-------|----------|-------------|
+| `item_smelted` | `item`, `count` | Player takes output from furnace/blast furnace/smoker |
+| `item_enchanted` | `level_cost` | Player enchants an item at enchanting table |
+| `anvil_used` | `result_item` | Player takes output from anvil (repair/rename/combine) |
+| `item_obtained` | `item` | Player picks up a milestone item (elytra, nether_star, dragon_egg, beacon, totem_of_undying) |
+| `first_night_survived` | *(none)* | Player survives first night without sleeping (overworld only) |
+
+**Changed Events:**
+
+| Event | Change |
+|-------|--------|
+| `eating` | Renamed to `item_consumed` for schema consistency |
+| `block_placed` | Re-enabled (was previously disabled) |
+
+**New Files:**
+
+| File | Purpose |
+|------|---------|
+| `SmeltingMixin.java` | Hooks `FurnaceOutputSlot.onTakeItem` |
+| `SmeltingListener.java` | Emits `item_smelted` events |
+| `EnchantingMixin.java` | Hooks `EnchantmentScreenHandler.onButtonClick` |
+| `EnchantingListener.java` | Emits `item_enchanted` events |
+| `AnvilMixin.java` | Hooks `AnvilScreenHandler.onTakeOutput` |
+| `AnvilListener.java` | Emits `anvil_used` events |
+| `FirstNightTracker.java` | State machine for night survival milestone |
+
+**Modified Files:**
+
+| File | Change |
+|------|--------|
+| `EatingListener.java` | Event name changed from `eating` to `item_consumed` |
+| `RareItemListener.java` | Added `MILESTONE_ITEMS` set and `item_obtained` emission |
+| `EventRegistry.java` | Enabled `BlockPlacedListener`, added `FirstNightTracker` |
+| `phase-pulse.mixins.json` | Added SmeltingMixin, EnchantingMixin, AnvilMixin |
+
+---
+
 ## 2026-02-04 - World Metadata for Events
 
 ### Automatic World Context

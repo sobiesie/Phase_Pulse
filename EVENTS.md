@@ -25,8 +25,7 @@ This document describes all events sent by the Phase_Pulse mod to the Phase Pal 
 - Removed `ExampleMixin` from mixin registry (`phase-pulse.mixins.json`)
 
 **Feature Changes:**
-- **Disabled `block_placed` event** - Commented out in `EventRegistry.java` (lines 28, 56, 71, 147)
-  - Can be re-enabled by uncommenting the BlockPlacedListener registration
+- ~~**Disabled `block_placed` event**~~ - Re-enabled as of February 2026
 
 **Impact:**
 - All mixins now correctly target client-side code only
@@ -137,32 +136,32 @@ Triggered when player is underwater and running out of air.
 
 ---
 
-### `eating`
+### `item_consumed`
 Triggered when player consumes food or drinks a potion.
 
 **Trigger conditions:**
 - Player finishes eating/drinking an item
-- Debounced: 250ms between eating events
+- Debounced: 250ms between consumption events
 
 **Example:**
 ```json
 {
-  "event": "eating",
+  "event": "item_consumed",
   "timestamp": 1737241187,
   "metadata": {
-    "item": "minecraft:bread"
+    "item": "bread"
   }
 }
 ```
 
 **Metadata fields:**
-- `item` (string): The item consumed (item ID format)
+- `item` (string): The item consumed (item ID without `minecraft:` prefix)
 
 **Common items:**
-- `minecraft:bread`
-- `minecraft:cooked_beef`
-- `minecraft:golden_apple`
-- `minecraft:potion`
+- `bread`
+- `cooked_beef`
+- `golden_apple`
+- `potion`
 - etc.
 
 ---
@@ -404,14 +403,10 @@ Triggered when player spends significant time in an inventory/container screen.
 
 ---
 
-### `block_placed` ⚠️ **DISABLED**
-~~Triggered when player places a block.~~
+### `block_placed`
+Triggered when player places a block.
 
-**Status:** This event is currently **disabled** in the code (EventRegistry.java lines 28, 56, 71, 147).
-
-To re-enable, uncomment the BlockPlacedListener registration in EventRegistry.java.
-
-**Trigger conditions (when enabled):**
+**Trigger conditions:**
 - Player successfully places a block item
 - Debounced: 100ms between placements
 
@@ -421,7 +416,7 @@ To re-enable, uncomment the BlockPlacedListener registration in EventRegistry.ja
   "event": "block_placed",
   "timestamp": 1737241192,
   "metadata": {
-    "block": "minecraft:stone"
+    "block": "stone"
   }
 }
 ```
@@ -476,6 +471,93 @@ Triggered when player crafts an item.
 **Metadata fields:**
 - `item` (string): The item crafted
 - `count` (number): Quantity crafted
+
+---
+
+### `item_smelted`
+Triggered when player takes output from a furnace, blast furnace, or smoker.
+
+**Trigger conditions:**
+- Player takes item from furnace output slot
+- Debounced: 500ms per item type
+
+**Example:**
+```json
+{
+  "event": "item_smelted",
+  "timestamp": 1737241194,
+  "metadata": {
+    "item": "iron_ingot",
+    "count": 8
+  }
+}
+```
+
+**Metadata fields:**
+- `item` (string): The smelted item
+- `count` (number): Quantity taken
+
+**Common smelted items:**
+- `iron_ingot`, `gold_ingot`, `copper_ingot`
+- `cooked_beef`, `cooked_porkchop`, `cooked_chicken`
+- `glass`, `stone`, `smooth_stone`
+- `charcoal`, `brick`, `nether_brick`
+
+---
+
+### `item_enchanted`
+Triggered when player successfully enchants an item at an enchanting table.
+
+**Trigger conditions:**
+- Player clicks an enchantment option and it succeeds
+- Debounced: 500ms
+
+**Example:**
+```json
+{
+  "event": "item_enchanted",
+  "timestamp": 1737241195,
+  "metadata": {
+    "level_cost": 30
+  }
+}
+```
+
+**Metadata fields:**
+- `level_cost` (number): The XP level cost of the enchantment (1-30)
+
+**Use cases:**
+- First enchantment milestone
+- High-level enchantment tracking (level 30 enchants)
+- Enchanting activity detection
+
+---
+
+### `anvil_used`
+Triggered when player takes output from an anvil (repair, rename, or enchantment combining).
+
+**Trigger conditions:**
+- Player takes item from anvil output slot
+- Debounced: 500ms
+
+**Example:**
+```json
+{
+  "event": "anvil_used",
+  "timestamp": 1737241196,
+  "metadata": {
+    "result_item": "diamond_sword"
+  }
+}
+```
+
+**Metadata fields:**
+- `result_item` (string): The resulting item from the anvil operation
+
+**Use cases:**
+- Tool maintenance tracking
+- Named item creation
+- Enchantment combining milestones
 
 ---
 
@@ -862,6 +944,80 @@ Triggered when hostile mobs are detected within 16 blocks of the player.
 
 ---
 
+## Milestone Events
+
+### `item_obtained`
+Triggered when player picks up a milestone item for the first time.
+
+**Trigger conditions:**
+- Player acquires a milestone item in inventory
+- Scanned every 10 ticks (0.5 seconds)
+- Debounced: 60 seconds per item type
+
+**Example:**
+```json
+{
+  "event": "item_obtained",
+  "timestamp": 1737241200,
+  "metadata": {
+    "item": "elytra"
+  }
+}
+```
+
+**Metadata fields:**
+- `item` (string): The milestone item obtained
+
+**Milestone items:**
+
+| Item | Significance |
+|------|--------------|
+| `elytra` | End-game flight capability |
+| `nether_star` | Wither boss defeated |
+| `dragon_egg` | Ender Dragon defeated |
+| `beacon` | Major infrastructure achievement |
+| `totem_of_undying` | Raid victory or mansion exploration |
+
+**Use cases:**
+- Boss defeat confirmation
+- End-game progression tracking
+- Major achievement celebrations
+
+---
+
+### `first_night_survived`
+Triggered once when the player survives their first night without sleeping.
+
+**Trigger conditions:**
+- Player is in the overworld
+- Night begins (time >= 13000)
+- Dawn arrives (time 0-1000) without player sleeping
+- Player is alive at dawn
+- Debounced: 24 hours (effectively once per world)
+
+**Example:**
+```json
+{
+  "event": "first_night_survived",
+  "timestamp": 1737241200,
+  "metadata": {}
+}
+```
+
+**Metadata fields:** None
+
+**State machine:**
+1. `IDLE` - Waiting for night to start
+2. `NIGHT_STARTED` - Night has begun, tracking sleep status
+3. `COMPLETED` - Milestone achieved, no more tracking
+
+**Use cases:**
+- Early game milestone recognition
+- Survival skill acknowledgment
+- "First night" achievement trigger
+
+---
+
 ## Rare / Special Events
 
 ### `rare_item_found`
@@ -1039,7 +1195,7 @@ Set any to `false` to disable that category.
 | `low_health` | Player | health, maxHealth, healthPercent |
 | `low_hunger` | Player | hunger, saturation |
 | `drowning` | Player | air, maxAir |
-| `eating` | Player | item |
+| `item_consumed` | Player | item |
 | `player_sleep` | Player | world_time |
 | `player_wake` | Player | world_time |
 | `sleep_failed` | Player | reason, monsters_nearby |
@@ -1047,9 +1203,12 @@ Set any to `false` to disable that category.
 | `player_death` | Player | cause |
 | `harmful_effect` | Player | effect, amplifier, duration_seconds, is_damaging |
 | `inventory_organizing` | Player | screen_type, duration_seconds |
-| ~~`block_placed`~~ | Player (DISABLED) | block |
+| `block_placed` | Player | block |
 | `block_broken` | Player | block |
 | `item_crafted` | Player | item, count |
+| `item_smelted` | Player | item, count |
+| `item_enchanted` | Player | level_cost |
+| `anvil_used` | Player | result_item |
 | `achievement_earned` | Player | achievement |
 | `day_start` | World | world_time |
 | `night_start` | World | world_time |
@@ -1063,6 +1222,8 @@ Set any to `false` to disable that category.
 | `combat_end` | Combat | duration_seconds |
 | `mob_killed` | Combat | mob_type |
 | `hostile_mob_nearby` | Combat | mob_type, count |
+| `item_obtained` | Milestone | item |
+| `first_night_survived` | Milestone | _(none)_ |
 | `rare_item_found` | Rare | item, category, count, is_very_rare |
 | `animal_tamed` | Rare | animal, trait |
 
@@ -1076,14 +1237,21 @@ Use these in-game commands/actions to trigger events for testing:
 # Player events
 /effect give @s minecraft:instant_damage 1 10  # Trigger low_health and player_hurt
 /effect give @s minecraft:hunger 30 255        # Trigger low_hunger
-# Eat bread or any food                        # Trigger eating
+# Eat bread or any food                        # Trigger item_consumed
 # Sleep in bed                                  # Trigger player_sleep/wake
 # Take any damage                               # Trigger player_hurt
 # Die from any cause                            # Trigger player_death
-# Place any block                               # Trigger block_placed (DISABLED)
+# Place any block                               # Trigger block_placed
 # Break any block                               # Trigger block_broken
 # Craft any item                                # Trigger item_crafted
+# Smelt iron ore in furnace                    # Trigger item_smelted
+# Enchant item at enchanting table             # Trigger item_enchanted
+# Rename/repair item in anvil                  # Trigger anvil_used
 # Complete advancement criteria                 # Trigger achievement_earned
+
+# Milestone events
+# Pick up elytra (creative: /give @s elytra)   # Trigger item_obtained
+# Survive night without sleeping               # Trigger first_night_survived
 
 # World events
 /time set 13000                                # Trigger night_start

@@ -12,7 +12,10 @@
 		"SleepMixin",
 		"TamingMixin",
 		"HorseTamingMixin",
-		"BlockBreakMixin"
+		"BlockBreakMixin",
+		"SmeltingMixin",
+		"EnchantingMixin",
+		"AnvilMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

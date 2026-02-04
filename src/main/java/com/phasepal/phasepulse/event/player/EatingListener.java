@@ -28,7 +28,7 @@ public class EatingListener {
 
         if (debouncer.shouldTrigger("eating")) {
             String itemName = stack.getItem().toString();
-            EventPacket packet = new EventPacket("eating")
+            EventPacket packet = new EventPacket("item_consumed")
                     .addMetadata("item", itemName);
 
             NetworkManager.getInstance().sendEvent(packet);
