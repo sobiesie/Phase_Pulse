@@ -1,6 +1,5 @@
 package com.phasepal.phasepulse.event.player;
 
-import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import net.minecraft.client.MinecraftClient;
@@ -13,11 +12,11 @@ public class HungerMonitor {
     private static final int LOW_HUNGER_THRESHOLD = 6; // 3 bars
     private static final String EVENT_KEY = "low_hunger";
 
-    private final EventDebouncer debouncer = new EventDebouncer();
     private boolean wasLowHunger = false;
 
     public void onClientTick(MinecraftClient client) {
         if (client.player == null) {
+            wasLowHunger = false;
             return;
         }
 
@@ -26,8 +25,8 @@ public class HungerMonitor {
 
         boolean isLowHunger = hunger < LOW_HUNGER_THRESHOLD;
 
-        // Trigger on transition to low hunger, or periodically while low
-        if (isLowHunger && (!wasLowHunger || debouncer.shouldTrigger(EVENT_KEY, 10000))) {
+        // Only trigger once when hunger first drops below threshold
+        if (isLowHunger && !wasLowHunger) {
             EventPacket packet = new EventPacket("low_hunger")
                     .addMetadata("hunger", hunger)
                     .addMetadata("saturation", Math.round(saturation * 10.0) / 10.0);
