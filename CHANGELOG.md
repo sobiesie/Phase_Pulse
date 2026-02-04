@@ -1,5 +1,37 @@
 # Changelog
 
+## 2026-02-04 - World Metadata for Events
+
+### Automatic World Context
+
+All events now include world metadata for better tracking across different worlds and sessions.
+
+**New metadata fields on every event:**
+- `world_name` - Level name (singleplayer) or server name (multiplayer)
+- `world_type` - `"singleplayer"` or `"multiplayer"`
+- `dimension` - `"overworld"`, `"the_nether"`, or `"the_end"`
+
+**Example output:**
+```json
+{
+  "event": "biome_discovery",
+  "timestamp": 1234567890,
+  "metadata": {
+    "biome": "minecraft:forest",
+    "world_name": "My World",
+    "world_type": "singleplayer",
+    "dimension": "overworld"
+  }
+}
+```
+
+**Files Changed:**
+| File | Change |
+|------|--------|
+| `NetworkManager.java` | Added `injectWorldMetadata()` to automatically add world context to all events |
+
+---
+
 ## 2026-02-04 - Client-Side Event Detection Migration
 
 ### Server-to-Client Migration
