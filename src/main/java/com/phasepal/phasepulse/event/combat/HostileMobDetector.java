@@ -16,6 +16,7 @@ import java.util.List;
  */
 public class HostileMobDetector {
     private static final double DETECTION_RADIUS = 16.0;
+    private static final double DETECTION_RADIUS_VERTICAL = 4.0; // Reduced to avoid detecting mobs in caves
     private static final double COMBAT_RADIUS = 8.0; // Closer range for combat detection
     private static final int SCAN_INTERVAL = 40; // Ticks (2 seconds)
     private static final long DEBOUNCE_MS = 10000; // 10 seconds between notifications
@@ -59,8 +60,8 @@ public class HostileMobDetector {
         }
         tickCounter = 0;
 
-        // Create bounding box around player
-        Box searchBox = client.player.getBoundingBox().expand(DETECTION_RADIUS);
+        // Create bounding box around player (limited vertical range to avoid cave mobs)
+        Box searchBox = client.player.getBoundingBox().expand(DETECTION_RADIUS, DETECTION_RADIUS_VERTICAL, DETECTION_RADIUS);
 
         // Find hostile entities in range - single pass to count and get first type
         List<Entity> nearbyEntities = client.world.getOtherEntities(client.player, searchBox);

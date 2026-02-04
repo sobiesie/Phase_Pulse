@@ -68,9 +68,8 @@ public class EventRegistry {
 
             // Register Fabric event listeners
             sleepListener.register();
-            deathListener.register();
             // blockPlacedListener.register();
-            blockBrokenListener.register();
+            // blockBrokenListener uses mixin (BlockBreakMixin)
 
             PhasePulse.LOGGER.info("Registered player state events");
         }
@@ -94,9 +93,8 @@ public class EventRegistry {
             hostileMobDetector = new HostileMobDetector();
             mobKilledListener = new MobKilledListener();
 
-            // Register combat tracking
+            // Register combat tracking (combatTracker uses mixin, mobKilledListener uses client tick)
             combatTracker.register();
-            mobKilledListener.register();
 
             PhasePulse.LOGGER.info("Registered combat events");
         }
@@ -119,6 +117,9 @@ public class EventRegistry {
             }
             if (hurtListener != null) {
                 hurtListener.onClientTick(client);
+            }
+            if (deathListener != null) {
+                deathListener.onClientTick(client);
             }
             if (statusEffectListener != null) {
                 statusEffectListener.onClientTick(client);
@@ -151,6 +152,9 @@ public class EventRegistry {
                 }
                 if (hostileMobDetector != null) {
                     hostileMobDetector.onClientTick(client);
+                }
+                if (mobKilledListener != null) {
+                    mobKilledListener.onClientTick(client);
                 }
             }
         });

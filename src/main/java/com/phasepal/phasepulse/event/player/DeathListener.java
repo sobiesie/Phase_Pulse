@@ -3,29 +3,42 @@ package com.phasepal.phasepulse.event.player;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.player.PlayerEntity;
 
 /**
- * Listens for player death events using Fabric API.
+ * Listens for player death events on the client side.
+ * Detects death by monitoring the player's isDead() state transition.
  */
 public class DeathListener {
     private final EventDebouncer debouncer = new EventDebouncer();
+    private boolean wasDead = false;
 
-    public void register() {
-        ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
-            if (entity instanceof PlayerEntity && entity.getEntityWorld().isClient()) {
-                if (debouncer.shouldTrigger("player_death")) {
-                    String deathCause = damageSource.getName();
+    public void onClientTick(MinecraftClient client) {
+        if (client.player == null) {
+            wasDead = false;
+            return;
+        }
 
-                    EventPacket packet = new EventPacket("player_death")
-                            .addMetadata("cause", deathCause);
+        boolean isDead = client.player.isDead();
 
-                    NetworkManager.getInstance().sendEvent(packet);
+        // Detect transition from alive to dead
+        if (isDead && !wasDead) {
+            if (debouncer.shouldTrigger("player_death")) {
+                String deathCause = "unknown";
+
+                DamageSource recentDamage = client.player.getRecentDamageSource();
+                if (recentDamage != null) {
+                    deathCause = recentDamage.getName();
                 }
+
+                EventPacket packet = new EventPacket("player_death")
+                        .addMetadata("cause", deathCause);
+
+                NetworkManager.getInstance().sendEvent(packet);
             }
-        });
+        }
+
+        wasDead = isDead;
     }
 }
