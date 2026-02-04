@@ -104,6 +104,15 @@ public class RareItemListener {
             "heart_of_the_sea", "beacon", "dragon_head"
     );
 
+    // Milestone items that trigger the item_obtained event for progression tracking
+    private static final Set<Item> MILESTONE_ITEMS = Set.of(
+            Items.ELYTRA,
+            Items.NETHER_STAR,
+            Items.DRAGON_EGG,
+            Items.BEACON,
+            Items.TOTEM_OF_UNDYING
+    );
+
     public void onClientTick(MinecraftClient client) {
         if (client.player == null) {
             return;
@@ -163,6 +172,17 @@ public class RareItemListener {
                                 .addMetadata("is_very_rare", isVeryRare);
 
                         NetworkManager.getInstance().sendEvent(packet);
+                    }
+
+                    // Also emit item_obtained for milestone items (longer cooldown)
+                    if (MILESTONE_ITEMS.contains(item)) {
+                        if (debouncer.shouldTrigger("milestone_" + itemId, 60000)) {
+                            String simpleName = itemId.replace("minecraft:", "");
+                            EventPacket milestonePacket = new EventPacket("item_obtained")
+                                    .addMetadata("item", simpleName);
+
+                            NetworkManager.getInstance().sendEvent(milestonePacket);
+                        }
                     }
                 }
             }

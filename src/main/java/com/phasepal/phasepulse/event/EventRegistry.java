@@ -6,6 +6,7 @@ import com.phasepal.phasepulse.config.PhasePulseConfig;
 import com.phasepal.phasepulse.event.combat.CombatTracker;
 import com.phasepal.phasepulse.event.combat.HostileMobDetector;
 import com.phasepal.phasepulse.event.combat.MobKilledListener;
+import com.phasepal.phasepulse.event.milestone.FirstNightTracker;
 import com.phasepal.phasepulse.event.player.*;
 import com.phasepal.phasepulse.event.world.BiomeTracker;
 import com.phasepal.phasepulse.event.world.StructureTracker;
@@ -30,7 +31,7 @@ public class EventRegistry {
     private static StatusEffectListener statusEffectListener;
     private static InventoryListener inventoryListener;
     private static RareItemListener rareItemListener;
-    // private static BlockPlacedListener blockPlacedListener;
+    private static BlockPlacedListener blockPlacedListener;
     private static BlockBrokenListener blockBrokenListener;
     private static TimeMonitor timeMonitor;
     private static WeatherMonitor weatherMonitor;
@@ -39,6 +40,7 @@ public class EventRegistry {
     private static CombatTracker combatTracker;
     private static HostileMobDetector hostileMobDetector;
     private static MobKilledListener mobKilledListener;
+    private static FirstNightTracker firstNightTracker;
 
     /**
      * Registers all event listeners based on configuration.
@@ -63,13 +65,15 @@ public class EventRegistry {
             statusEffectListener = new StatusEffectListener();
             inventoryListener = new InventoryListener();
             rareItemListener = new RareItemListener();
-            // blockPlacedListener = new BlockPlacedListener();
+            blockPlacedListener = new BlockPlacedListener();
             blockBrokenListener = new BlockBrokenListener();
+            firstNightTracker = new FirstNightTracker();
 
             // Register Fabric event listeners
             sleepListener.register();
-            // blockPlacedListener.register();
+            blockPlacedListener.register();
             // blockBrokenListener uses mixin (BlockBreakMixin)
+            // firstNightTracker uses client tick
 
             PhasePulse.LOGGER.info("Registered player state events");
         }
@@ -146,6 +150,11 @@ public class EventRegistry {
                     structureTracker.onClientTick(client);
                 }
 
+                // Milestone trackers
+                if (firstNightTracker != null) {
+                    firstNightTracker.onClientTick(client);
+                }
+
                 // Combat monitors
                 if (combatTracker != null) {
                     combatTracker.onClientTick();
@@ -185,7 +194,7 @@ public class EventRegistry {
         statusEffectListener = null;
         inventoryListener = null;
         rareItemListener = null;
-        // blockPlacedListener = null;
+        blockPlacedListener = null;
         blockBrokenListener = null;
         timeMonitor = null;
         weatherMonitor = null;
@@ -194,6 +203,7 @@ public class EventRegistry {
         combatTracker = null;
         hostileMobDetector = null;
         mobKilledListener = null;
+        firstNightTracker = null;
 
         registered = false;
         PhasePulse.LOGGER.info("Event listeners unregistered");
