@@ -57,8 +57,13 @@ public class PalCommand {
                 .then(ClientCommandManager.literal("speak")
                     .then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
                         .executes(context -> executeSpeakCommand(context))))
-                // /pal <message> - regular chat message
+                // /pal chat <message> - explicit chat sub-command for discoverability
+                .then(ClientCommandManager.literal("chat")
+                    .then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
+                        .executes(context -> executeMessageCommand(context))))
+                // /pal <message> - regular chat message (fallback/power user)
                 .then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
+                    .suggests((context, builder) -> builder.suggest("<message>").buildFuture())
                     .executes(context -> executeMessageCommand(context)))
                 // /pal with no arguments - show usage
                 .executes(context -> executeHelp(context))
@@ -190,8 +195,9 @@ public class PalCommand {
      */
     private static int executeHelp(CommandContext<FabricClientCommandSource> context) {
         context.getSource().sendFeedback(Text.literal("\u00a76Phase Pal Commands:"));
-        context.getSource().sendFeedback(Text.literal("\u00a77/pal <message> \u00a7f- Send a message to Phase Pal"));
+        context.getSource().sendFeedback(Text.literal("\u00a77/pal chat <message> \u00a7f- Send a message to Phase Pal"));
         context.getSource().sendFeedback(Text.literal("\u00a77/pal speak <message> \u00a7f- Phase Pal speaks the response"));
+        context.getSource().sendFeedback(Text.literal("\u00a78Tip: You can also use /pal <message> directly"));
         return 1;
     }
 }

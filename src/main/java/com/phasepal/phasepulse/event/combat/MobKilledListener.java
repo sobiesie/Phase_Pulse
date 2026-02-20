@@ -23,17 +23,17 @@ public class MobKilledListener {
     private static final double TRACKING_RANGE = 16.0;
     private static final long TRACK_TIMEOUT_MS = 10000; // Stop tracking after 10 seconds
 
-    private final EventDebouncer debouncer = new EventDebouncer();
+    private static final EventDebouncer debouncer = new EventDebouncer();
 
     // Track entities that have been attacked by player: entity ID -> last attack time
-    private final Map<Integer, Long> attackedEntities = new HashMap<>();
+    private static final Map<Integer, Long> attackedEntities = new HashMap<>();
     // Track entities that were alive last tick: entity ID -> was alive
-    private final Map<Integer, Boolean> entityAliveState = new HashMap<>();
+    private static final Map<Integer, Boolean> entityAliveState = new HashMap<>();
 
     /**
      * Called when the player attacks an entity (from HurtListener or attack event).
      */
-    public void onPlayerAttackedEntity(Entity target) {
+    public static void onPlayerAttackedEntity(Entity target) {
         if (target instanceof LivingEntity && !(target instanceof PlayerEntity)) {
             attackedEntities.put(target.getId(), System.currentTimeMillis());
         }
@@ -47,12 +47,14 @@ public class MobKilledListener {
         long now = System.currentTimeMillis();
 
         // Clean up old tracked entities
-        Iterator<Map.Entry<Integer, Long>> iterator = attackedEntities.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<Integer, Long> entry = iterator.next();
-            if (now - entry.getValue() > TRACK_TIMEOUT_MS) {
-                iterator.remove();
-                entityAliveState.remove(entry.getKey());
+        synchronized (attackedEntities) {
+            Iterator<Map.Entry<Integer, Long>> iterator = attackedEntities.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<Integer, Long> entry = iterator.next();
+                if (now - entry.getValue() > TRACK_TIMEOUT_MS) {
+                    iterator.remove();
+                    entityAliveState.remove(entry.getKey());
+                }
             }
         }
 
@@ -68,10 +70,15 @@ public class MobKilledListener {
 
             int entityId = entity.getId();
             boolean isAlive = living.isAlive();
-            Boolean wasAlive = entityAliveState.get(entityId);
+            Boolean wasAlive;
+            boolean wasAttacked;
+            
+            synchronized (attackedEntities) {
+                wasAlive = entityAliveState.get(entityId);
+                wasAttacked = attackedEntities.containsKey(entityId);
+            }
 
-            // Detect death transition for entities we attacked
-            if (wasAlive != null && wasAlive && !isAlive && attackedEntities.containsKey(entityId)) {
+            if (wasAlive != null && wasAlive && !isAlive && wasAttacked) {
                 // Entity just died and we attacked it
                 String mobType = getMobTypeName(living);
 
@@ -85,12 +92,16 @@ public class MobKilledListener {
                 }
 
                 // Stop tracking this entity
-                attackedEntities.remove(entityId);
-                entityAliveState.remove(entityId);
+                synchronized (attackedEntities) {
+                    attackedEntities.remove(entityId);
+                    entityAliveState.remove(entityId);
+                }
             } else {
                 // Update alive state for tracked entities
-                if (attackedEntities.containsKey(entityId)) {
-                    entityAliveState.put(entityId, isAlive);
+                synchronized (attackedEntities) {
+                    if (attackedEntities.containsKey(entityId)) {
+                        entityAliveState.put(entityId, isAlive);
+                    }
                 }
             }
         }
@@ -98,7 +109,9 @@ public class MobKilledListener {
         // Also track attack via player's attack target
         Entity attackTarget = client.player.getAttacking();
         if (attackTarget instanceof LivingEntity && !(attackTarget instanceof PlayerEntity)) {
-            attackedEntities.put(attackTarget.getId(), now);
+            synchronized (attackedEntities) {
+                attackedEntities.put(attackTarget.getId(), now);
+            }
         }
     }
 

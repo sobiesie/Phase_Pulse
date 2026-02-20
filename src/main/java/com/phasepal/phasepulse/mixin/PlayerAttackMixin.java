@@ -2,8 +2,10 @@ package com.phasepal.phasepulse.mixin;
 
 import com.phasepal.phasepulse.event.EventRegistry;
 import com.phasepal.phasepulse.event.combat.CombatTracker;
+import com.phasepal.phasepulse.event.combat.MobKilledListener;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,10 +24,16 @@ public class PlayerAttackMixin {
 
         // Only process for the local player on the client
         if (player == MinecraftClient.getInstance().player && player.getEntityWorld().isClient()) {
-            CombatTracker tracker = EventRegistry.getCombatTracker();
-            if (tracker != null) {
-                tracker.onCombatActivity();
+            // Sustain combat state
+            if (target instanceof Monster) {
+                CombatTracker tracker = EventRegistry.getCombatTracker();
+                if (tracker != null) {
+                    tracker.onCombatActivity();
+                }
             }
+            
+            // Track for kill event
+            MobKilledListener.onPlayerAttackedEntity(target);
         }
     }
 }
