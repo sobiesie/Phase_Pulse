@@ -1,6 +1,7 @@
 package com.phasepal.phasepulse.mixin;
 
 import com.phasepal.phasepulse.event.player.TamingListener;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,8 +25,8 @@ public abstract class TamingMixin {
     private void onSetOwner(LivingEntity owner, CallbackInfo ci) {
         TameableEntity entity = (TameableEntity) (Object) this;
 
-        // Only trigger if being tamed (not untamed) and on client
-        if (owner != null && entity.getEntityWorld().isClient() && entity.isTamed()) {
+        // Only trigger if being tamed by the local player on the client
+        if (owner == MinecraftClient.getInstance().player && entity.getEntityWorld().isClient() && entity.isTamed()) {
             TamingListener.onAnimalTamed(entity);
         }
     }

@@ -4,6 +4,7 @@ import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 
 /**
@@ -27,7 +28,7 @@ public class SleepListener {
     public void register() {
         // Player starts sleeping
         EntitySleepEvents.START_SLEEPING.register((entity, sleepingPos) -> {
-            if (entity instanceof PlayerEntity && entity.getEntityWorld().isClient()) {
+            if (entity == MinecraftClient.getInstance().player) {
                 long worldTime = entity.getEntityWorld().getTimeOfDay() % 24000;
                 wasInBed = true;
                 sleepStartTime = worldTime;
@@ -43,7 +44,7 @@ public class SleepListener {
 
         // Player stops sleeping (wakes up)
         EntitySleepEvents.STOP_SLEEPING.register((entity, sleepingPos) -> {
-            if (entity instanceof PlayerEntity && entity.getEntityWorld().isClient()) {
+            if (entity == MinecraftClient.getInstance().player) {
                 long worldTime = entity.getEntityWorld().getTimeOfDay() % 24000;
 
                 // Only trigger wake event if player actually slept through the night

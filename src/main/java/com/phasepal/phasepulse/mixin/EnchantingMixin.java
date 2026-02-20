@@ -1,6 +1,7 @@
 package com.phasepal.phasepulse.mixin;
 
 import com.phasepal.phasepulse.event.player.EnchantingListener;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.screen.EnchantmentScreenHandler;
 import org.spongepowered.asm.mixin.Final;
@@ -19,8 +20,8 @@ public abstract class EnchantingMixin {
 
     @Inject(method = "onButtonClick", at = @At("RETURN"))
     private void afterEnchant(PlayerEntity player, int id, CallbackInfoReturnable<Boolean> cir) {
-        // Only trigger if enchantment was successful and client-side
-        if (cir.getReturnValue() && player.getEntityWorld().isClient() && id >= 0 && id < 3) {
+        // Only trigger if successful, on client side, and it is the local player
+        if (cir.getReturnValue() && player == MinecraftClient.getInstance().player && player.getEntityWorld().isClient() && id >= 0 && id < 3) {
             EnchantingListener.onItemEnchanted(enchantmentPower[id]);
         }
     }

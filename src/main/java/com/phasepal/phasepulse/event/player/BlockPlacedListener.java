@@ -4,6 +4,7 @@ import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.ActionResult;
 
 /**
@@ -14,7 +15,8 @@ public class BlockPlacedListener {
 
     public void register() {
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            if (world.isClient() && player.getStackInHand(hand).getItem() instanceof net.minecraft.item.BlockItem) {
+            // Only trigger if it is the local player on the client
+            if (player == MinecraftClient.getInstance().player && world.isClient() && player.getStackInHand(hand).getItem() instanceof net.minecraft.item.BlockItem) {
                 String blockType = player.getStackInHand(hand).getItem().toString();
 
                 if (debouncer.shouldTrigger("block_placed", 100)) {
