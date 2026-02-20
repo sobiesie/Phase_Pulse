@@ -48,7 +48,7 @@ public class HurtListener {
             if (HostileMobDetector.areHostilesNearby()) {
                 CombatTracker tracker = EventRegistry.getCombatTracker();
                 if (tracker != null) {
-                    tracker.onPlayerDamaged();
+                    tracker.onCombatActivity();
                 }
             }
         }

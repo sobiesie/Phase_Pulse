@@ -15,7 +15,8 @@
 		"BlockBreakMixin",
 		"SmeltingMixin",
 		"EnchantingMixin",
-		"AnvilMixin"
+		"AnvilMixin",
+		"PlayerAttackMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
