@@ -1,5 +1,33 @@
 # Changelog
 
+## v1.1.0 - The "Multiplayer & Activity" Update (2026-02-20)
+
+This release focuses on significantly improving the accuracy of event detection, fixing critical bugs in multiplayer environments, and expanding the mod's awareness to include trading, breeding, fishing, and more.
+
+### 🚀 New Features & Event Tracking
+*   **Villager Trading:** New `villager_trade` event. Tracks the item received, quantity, and merchant experience gained.
+*   **Animal Breeding:** New `animal_bred` event. Detects when you successfully breed animals (cows, sheep, etc.) and identifies the species.
+*   **Dimension Tracking:** New `dimension_changed` event. Proactively tracks travel between the Overworld, Nether, and The End.
+*   **Fishing Detection:** New `fishing_catch` event. Sends data whenever you successfully reel in an item.
+*   **Totem Usage:** New `totem_used` event. Specifically detects the moment a Totem of Undying is consumed.
+*   **Potion Brewing:** New `potion_brewed` event. Tracks completed potions when the brewing stand interface is closed.
+
+### 🛠️ Bug Fixes & Improvements
+*   **Multiplayer "Ghost" Fix:** Fixed a major issue where actions by other players (sleeping, taming, placing blocks) would trigger events for you. All listeners now strictly verify the **Local Player**.
+*   **Smarter Combat State:**
+    *   Combat no longer ends prematurely if hostile mobs are still within 8 blocks.
+    *   Attacking now sustains the combat state (offense is now tracked alongside defense).
+    *   Attacking passive mobs (chickens, pigs, etc.) no longer triggers the "Combat Start" event.
+*   **Accurate Sleep Detection:** The `player_wake` event now uses **time wrap-around detection**. It only triggers if the world time actually advanced, preventing "waking up" messages when simply getting out of bed at night.
+*   **Command Discoverability:** Refactored the `/pal` command. It now explicitly suggests `chat` and `speak` sub-commands, making it much easier for new users to find.
+
+### 💻 Technical Changes
+*   **Mixin Stability:** Refactored `MerchantScreenHandler` and `ScreenHandler` mixins to resolve remapping failures with 1.21.1 Yarn mappings.
+*   **Performance:** Optimized `MobKilledListener` with thread-safe static tracking and reduced overhead.
+*   **Documentation:** Fully updated `EVENTS.md` with schemas and metadata for all new event types.
+
+---
+
 ## 2026-02-04 - Event Spam Fixes
 
 ### State Monitor Spam Prevention
