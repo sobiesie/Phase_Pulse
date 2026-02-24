@@ -4,6 +4,7 @@ import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 
 /**
@@ -27,7 +28,7 @@ public class SleepListener {
     public void register() {
         // Player starts sleeping
         EntitySleepEvents.START_SLEEPING.register((entity, sleepingPos) -> {
-            if (entity instanceof PlayerEntity && entity.getEntityWorld().isClient()) {
+            if (entity == MinecraftClient.getInstance().player) {
                 long worldTime = entity.getEntityWorld().getTimeOfDay() % 24000;
                 wasInBed = true;
                 sleepStartTime = worldTime;
@@ -43,13 +44,14 @@ public class SleepListener {
 
         // Player stops sleeping (wakes up)
         EntitySleepEvents.STOP_SLEEPING.register((entity, sleepingPos) -> {
-            if (entity instanceof PlayerEntity && entity.getEntityWorld().isClient()) {
+            if (entity == MinecraftClient.getInstance().player) {
                 long worldTime = entity.getEntityWorld().getTimeOfDay() % 24000;
 
-                // Only trigger wake event if player actually slept through the night
-                // (time is now morning and they were in bed)
+                // A true "sleep through night" skip always results in morning (0-1000)
+                // and the time cycle will have wrapped around (worldTime < sleepStartTime)
                 boolean isNowMorning = worldTime >= MORNING_START && worldTime <= MORNING_END;
-                boolean actuallySlept = wasInBed && isNowMorning && sleepStartTime > MORNING_END;
+                boolean timeWrapped = sleepStartTime != -1 && worldTime < sleepStartTime;
+                boolean actuallySlept = wasInBed && isNowMorning && timeWrapped;
 
                 if (actuallySlept && debouncer.shouldTrigger("player_wake")) {
                     EventPacket packet = new EventPacket("player_wake")

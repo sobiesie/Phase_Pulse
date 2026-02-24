@@ -22,10 +22,10 @@ public class CombatTracker {
     }
 
     /**
-     * Called when the player takes damage.
-     * Should be called from client tick or damage event.
+     * Called when the player takes damage or performs an attack.
+     * Sustains the "in combat" state and updates the last activity timestamp.
      */
-    public void onPlayerDamaged() {
+    public void onCombatActivity() {
         long now = System.currentTimeMillis();
 
         if (!inCombat) {
@@ -39,7 +39,7 @@ public class CombatTracker {
                 NetworkManager.getInstance().sendEvent(packet);
             }
         } else {
-            // Already in combat, update last damage time
+            // Already in combat, update last activity time
             lastDamageTime = now;
         }
     }
@@ -53,10 +53,16 @@ public class CombatTracker {
         }
 
         long now = System.currentTimeMillis();
-        long timeSinceLastDamage = now - lastDamageTime;
 
-        if (timeSinceLastDamage >= COMBAT_TIMEOUT_MS) {
-            // Combat ended
+        // If hostile mobs are still nearby, keep the combat state alive
+        if (HostileMobDetector.areHostilesNearby()) {
+            lastDamageTime = now;
+        }
+
+        long timeSinceLastActivity = now - lastDamageTime;
+
+        if (timeSinceLastActivity >= COMBAT_TIMEOUT_MS) {
+            // Combat ended (no damage taken/dealt and no hostiles nearby for 5s)
             inCombat = false;
             long durationSeconds = (now - combatStartTime) / 1000;
 

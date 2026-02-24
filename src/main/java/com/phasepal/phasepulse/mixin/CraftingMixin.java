@@ -1,6 +1,7 @@
 package com.phasepal.phasepulse.mixin;
 
 import com.phasepal.phasepulse.event.player.CraftingListener;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.CraftingResultSlot;
@@ -16,7 +17,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class CraftingMixin {
     @Inject(method = "onTakeItem", at = @At("HEAD"))
     private void onCraftItem(PlayerEntity player, ItemStack stack, CallbackInfo ci) {
-        if (player.getEntityWorld().isClient()) {
+        // Only trigger if it is the local player and on client side
+        if (player == MinecraftClient.getInstance().player && player.getEntityWorld().isClient()) {
             CraftingListener.onItemCrafted(stack);
         }
     }

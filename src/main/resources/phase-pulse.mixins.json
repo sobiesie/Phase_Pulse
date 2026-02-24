@@ -15,7 +15,13 @@
 		"BlockBreakMixin",
 		"SmeltingMixin",
 		"EnchantingMixin",
-		"AnvilMixin"
+		"AnvilMixin",
+		"PlayerAttackMixin",
+		"AnimalBreedingMixin",
+		"TradingMixin",
+		"FishingMixin",
+		"TotemUsageMixin",
+		"BrewingMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

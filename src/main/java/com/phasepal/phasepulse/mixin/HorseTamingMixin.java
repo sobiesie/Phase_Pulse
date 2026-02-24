@@ -1,6 +1,7 @@
 package com.phasepal.phasepulse.mixin;
 
 import com.phasepal.phasepulse.event.player.TamingListener;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.passive.AbstractHorseEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.Registries;
@@ -20,8 +21,8 @@ public class HorseTamingMixin {
     private void onBondWithPlayer(PlayerEntity player, CallbackInfoReturnable<Boolean> cir) {
         AbstractHorseEntity entity = (AbstractHorseEntity) (Object) this;
 
-        // Only trigger on client side
-        if (entity.getEntityWorld().isClient()) {
+        // Only trigger if bonding with the local player and on client side
+        if (player == MinecraftClient.getInstance().player && entity.getEntityWorld().isClient()) {
             String entityType = Registries.ENTITY_TYPE.getId(entity.getType()).toString();
             TamingListener.onHorseTamed(entityType);
         }

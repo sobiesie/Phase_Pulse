@@ -1226,8 +1226,158 @@ Set any to `false` to disable that category.
 | `first_night_survived` | Milestone | _(none)_ |
 | `rare_item_found` | Rare | item, category, count, is_very_rare |
 | `animal_tamed` | Rare | animal, trait |
+| `animal_bred` | Rare | animal |
+| `villager_trade` | Player | item, count, experience |
+| `dimension_changed` | World | from, to |
+| `fishing_catch` | Player | item, count |
+| `totem_used` | Combat | _(none)_ |
+| `potion_brewed` | Player | potion, count |
 
 ---
+
+## New Activity Events
+
+### `animal_bred`
+Triggered when two animals are successfully bred.
+
+**Trigger conditions:**
+- Player feeds breeding items to two animals of the same species and a baby is born
+- Debounced: 10 seconds per animal type
+
+**Example:**
+```json
+{
+  "event": "animal_bred",
+  "timestamp": 1737241205,
+  "metadata": {
+    "animal": "cow"
+  }
+}
+```
+
+**Metadata fields:**
+- `animal` (string): The animal type bred
+
+---
+
+### `villager_trade`
+Triggered when a player completes a trade with a villager.
+
+**Trigger conditions:**
+- Player takes the result item from a villager trade interface
+- Debounced: 500ms between trades
+
+**Example:**
+```json
+{
+  "event": "villager_trade",
+  "timestamp": 1737241210,
+  "metadata": {
+    "item": "emerald",
+    "count": 1,
+    "experience": 2
+  }
+}
+```
+
+**Metadata fields:**
+- `item` (string): The item received from the trade
+- `count` (number): Quantity received
+- `experience` (number): Merchant experience gained from the trade
+
+---
+
+### `dimension_changed`
+Triggered when the player travels between dimensions.
+
+**Trigger conditions:**
+- Player moves between Overworld, Nether, or End
+- Debounced: 5 seconds
+
+**Example:**
+```json
+{
+  "event": "dimension_changed",
+  "timestamp": 1737241215,
+  "metadata": {
+    "from": "minecraft:overworld",
+    "to": "minecraft:the_nether"
+  }
+}
+```
+
+**Metadata fields:**
+- `from` (string): The dimension the player left
+- `to` (string): The dimension the player entered
+
+---
+
+### `fishing_catch`
+Triggered when a player catches an item through fishing.
+
+**Trigger conditions:**
+- Player reels in the fishing rod when a fish is on the line
+- Debounced: 1 second
+
+**Example:**
+```json
+{
+  "event": "fishing_catch",
+  "timestamp": 1737241220,
+  "metadata": {
+    "item": "cod",
+    "count": 1
+  }
+}
+```
+
+**Metadata fields:**
+- `item` (string): The item caught
+- `count` (number): Quantity caught
+
+---
+
+### `totem_used`
+Triggered when a Totem of Undying is consumed.
+
+**Trigger conditions:**
+- Player health reaches 0 while holding a Totem of Undying
+
+**Example:**
+```json
+{
+  "event": "totem_used",
+  "timestamp": 1737241225,
+  "metadata": {}
+}
+```
+
+**Metadata fields:** None
+
+---
+
+### `potion_brewed`
+Triggered when a player completes brewing a potion.
+
+**Trigger conditions:**
+- Player closes a brewing stand interface with finished potions in the output slots
+- Debounced: 500ms
+
+**Example:**
+```json
+{
+  "event": "potion_brewed",
+  "timestamp": 1737241230,
+  "metadata": {
+    "potion": "potion",
+    "count": 3
+  }
+}
+```
+
+**Metadata fields:**
+- `potion` (string): The type of potion brewed
+- `count` (number): Quantity brewed
 
 ## Testing Events
 

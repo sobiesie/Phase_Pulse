@@ -7,6 +7,7 @@ import com.phasepal.phasepulse.event.combat.HostileMobDetector;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.damage.DamageSource;
 
 /**
  * Monitors player hurt state via client tick.
@@ -38,8 +39,15 @@ public class HurtListener {
             }
 
             if (debouncer.shouldTrigger("player_hurt", 1000)) { // 1 second debounce
+                String damageSource = "unknown";
+                DamageSource recentDamage = client.player.getRecentDamageSource();
+                if (recentDamage != null) {
+                    damageSource = recentDamage.getName();
+                }
+
                 EventPacket packet = new EventPacket("player_hurt")
-                        .addMetadata("damage", Math.round(damage * 10.0) / 10.0);
+                        .addMetadata("damage", Math.round(damage * 10.0) / 10.0)
+                        .addMetadata("source", damageSource);
 
                 NetworkManager.getInstance().sendEvent(packet);
             }
@@ -48,7 +56,7 @@ public class HurtListener {
             if (HostileMobDetector.areHostilesNearby()) {
                 CombatTracker tracker = EventRegistry.getCombatTracker();
                 if (tracker != null) {
-                    tracker.onPlayerDamaged();
+                    tracker.onCombatActivity();
                 }
             }
         }

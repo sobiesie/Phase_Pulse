@@ -2,6 +2,7 @@ package com.phasepal.phasepulse.mixin;
 
 import com.mojang.datafixers.util.Either;
 import com.phasepal.phasepulse.event.player.SleepListener;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerEntity.SleepFailureReason;
 import net.minecraft.util.Unit;
@@ -22,8 +23,8 @@ public class SleepMixin {
     private void onTrySleep(BlockPos pos, CallbackInfoReturnable<Either<SleepFailureReason, Unit>> cir) {
         PlayerEntity player = (PlayerEntity) (Object) this;
 
-        // Only process on client side
-        if (!player.getEntityWorld().isClient()) {
+        // Only process if it is the local player and on client side
+        if (player != MinecraftClient.getInstance().player) {
             return;
         }
 

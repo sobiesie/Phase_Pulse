@@ -3,6 +3,7 @@ package com.phasepal.phasepulse.event.player;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -21,8 +22,8 @@ public class EatingListener {
      * @param stack The item being consumed
      */
     public static void onItemConsumed(LivingEntity entity, ItemStack stack) {
-        // Only track client-side player eating
-        if (!(entity instanceof PlayerEntity) || !entity.getEntityWorld().isClient()) {
+        // Only track local client-side player eating
+        if (entity != MinecraftClient.getInstance().player || !entity.getEntityWorld().isClient()) {
             return;
         }
 

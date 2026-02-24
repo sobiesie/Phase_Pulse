@@ -9,6 +9,7 @@ import com.phasepal.phasepulse.event.combat.MobKilledListener;
 import com.phasepal.phasepulse.event.milestone.FirstNightTracker;
 import com.phasepal.phasepulse.event.player.*;
 import com.phasepal.phasepulse.event.world.BiomeTracker;
+import com.phasepal.phasepulse.event.world.DimensionChangeListener;
 import com.phasepal.phasepulse.event.world.StructureTracker;
 import com.phasepal.phasepulse.event.world.TimeMonitor;
 import com.phasepal.phasepulse.event.world.WeatherMonitor;
@@ -36,6 +37,7 @@ public class EventRegistry {
     private static TimeMonitor timeMonitor;
     private static WeatherMonitor weatherMonitor;
     private static BiomeTracker biomeTracker;
+    private static DimensionChangeListener dimensionChangeListener;
     private static StructureTracker structureTracker;
     private static CombatTracker combatTracker;
     private static HostileMobDetector hostileMobDetector;
@@ -85,6 +87,7 @@ public class EventRegistry {
 
         if (config.sendBiomeEvents) {
             biomeTracker = new BiomeTracker();
+            dimensionChangeListener = new DimensionChangeListener();
             structureTracker = new StructureTracker();
         }
 
@@ -146,6 +149,9 @@ public class EventRegistry {
                 if (biomeTracker != null) {
                     biomeTracker.onClientTick(client);
                 }
+                if (dimensionChangeListener != null) {
+                    dimensionChangeListener.onClientTick(client);
+                }
                 if (structureTracker != null) {
                     structureTracker.onClientTick(client);
                 }
@@ -199,6 +205,7 @@ public class EventRegistry {
         timeMonitor = null;
         weatherMonitor = null;
         biomeTracker = null;
+        dimensionChangeListener = null;
         structureTracker = null;
         combatTracker = null;
         hostileMobDetector = null;
