@@ -5,41 +5,42 @@ import com.phasepal.phasepulse.config.ConfigManager;
 import com.phasepal.phasepulse.config.PhasePulseConfig;
 import com.phasepal.phasepulse.event.EventRegistry;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.fabricmc.api.ClientModInitializer;
 
 /**
  * Client-side initialization for Phase_Pulse mod.
  * Sets up configuration, networking, and event listeners.
  */
-public class PhasePulseClient implements ClientModInitializer {
-    @Override
-    public void onInitializeClient() {
-        PhasePulse.LOGGER.info("Initializing Phase_Pulse client...");
+public final class PhasePulseClient {
+	private PhasePulseClient() {
+	}
 
-        // Load configuration
-        PhasePulseConfig config = ConfigManager.loadConfig();
+	public static void initialize() {
+		PhasePulse.LOGGER.info("Initializing Phase_Pulse client...");
 
-        // Initialize network layer if enabled
-        if (config.enabled) {
-            NetworkManager.getInstance().initialize();
-            PhasePulse.LOGGER.info("Phase_Pulse network initialized - companion link ready");
+		// Load configuration
+		PhasePulseConfig config = ConfigManager.loadConfig();
 
-            // Register event listeners
-            EventRegistry.registerAll();
+		// Initialize network layer if enabled
+		if (config.enabled) {
+			NetworkManager.getInstance().initialize();
+			PhasePulse.LOGGER.info("Phase_Pulse network initialized - companion link ready");
 
-            // Register /pal command for chat to Phase Pal
-            PalCommand.register();
-        } else {
-            PhasePulse.LOGGER.info("Phase_Pulse is disabled in configuration");
-        }
+			// Register event listeners
+			EventRegistry.registerAll();
 
-        // Register shutdown hook
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            PhasePulse.LOGGER.info("Shutting down Phase_Pulse...");
-            NetworkManager.getInstance().shutdown();
-            EventRegistry.unregisterAll();
-        }));
+			// NeoForge client command hookup is pending; keep stub call for parity.
+			PalCommand.register();
+		} else {
+			PhasePulse.LOGGER.info("Phase_Pulse is disabled in configuration");
+		}
 
-        PhasePulse.LOGGER.info("Phase_Pulse client initialization complete");
-    }
+		// Register shutdown hook
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			PhasePulse.LOGGER.info("Shutting down Phase_Pulse...");
+			NetworkManager.getInstance().shutdown();
+			EventRegistry.unregisterAll();
+		}));
+
+		PhasePulse.LOGGER.info("Phase_Pulse client initialization complete");
+	}
 }

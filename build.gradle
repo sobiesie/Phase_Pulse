@@ -1,6 +1,7 @@
 plugins {
-	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+	id 'java-library'
 	id 'maven-publish'
+	id 'net.neoforged.moddev' version "${moddevgradle_version}"
 }
 
 version = project.mod_version
@@ -11,50 +12,76 @@ base {
 }
 
 repositories {
-	// Add repositories to retrieve artifacts from in here.
-	// You should only use this when depending on other mods because
-	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
-	// for more information about repositories.
+	mavenCentral()
 }
 
-fabricApi {
-	configureDataGeneration {
-		client = true
+neoForge {
+	version = project.neo_version
+
+	runs {
+		client {
+			client()
+		}
+		server {
+			server()
+		}
+		clientData {
+			clientData()
+		}
+	}
+
+	mods {
+		"${project.mod_id}" {
+			sourceSet(sourceSets.main)
+		}
 	}
 }
 
-dependencies {
-	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-	
+tasks.register('runData') {
+	group = 'mod development'
+	description = 'Alias for runClientData'
+	dependsOn(tasks.named('runClientData'))
 }
 
-processResources {
-	inputs.property "version", project.version
-
-	filesMatching("fabric.mod.json") {
-		expand "version": inputs.properties.version
-	}
-}
-
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+tasks.register('prepareDataRun') {
+	group = 'mod development'
+	description = 'Alias for prepareClientDataRun'
+	dependsOn(tasks.named('prepareClientDataRun'))
 }
 
 java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
 	withSourcesJar()
+}
 
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+}
+
+def replaceProperties = [
+		minecraft_version       : project.minecraft_version,
+		minecraft_version_range : project.minecraft_version_range,
+		neo_version             : project.neo_version,
+		neo_version_range       : project.neo_version_range,
+		loader_version_range    : project.loader_version_range,
+		mod_id                  : project.mod_id,
+		mod_name                : project.mod_name,
+		mod_license             : project.mod_license,
+		mod_version             : project.mod_version,
+		mod_authors             : project.mod_authors,
+		mod_description         : project.mod_description,
+		mod_homepage_url        : project.mod_homepage_url,
+		mod_issue_tracker_url   : project.mod_issue_tracker_url
+]
+
+processResources {
+	inputs.properties(replaceProperties)
+
+	filesMatching('META-INF/neoforge.mods.toml') {
+		expand replaceProperties
+	}
 }
 
 jar {
@@ -65,7 +92,6 @@ jar {
 	}
 }
 
-// configure the maven publication
 publishing {
 	publications {
 		create("mavenJava", MavenPublication) {
@@ -73,12 +99,6 @@ publishing {
 			from components.java
 		}
 	}
-
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
 	repositories {
-		// Add repositories to publish to here.
-		// Notice: This block does NOT have the same function as the block in the top level.
-		// The repositories here will be used for publishing your artifact, not for
-		// retrieving dependencies.
 	}
 }

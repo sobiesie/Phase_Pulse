@@ -3,11 +3,11 @@ package com.phasepal.phasepulse.event.player;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +21,7 @@ public class RareItemListener {
     private static final int SCAN_INTERVAL = 10; // Check every 0.5 seconds
 
     private final EventDebouncer debouncer = new EventDebouncer();
-    private final Map<String, Integer> lastItemCounts = new HashMap<>();
+    private final Map<Item, Integer> lastItemCounts = new HashMap<>();
     private int tickCounter = 0;
     private boolean initialized = false;
 
@@ -113,7 +113,7 @@ public class RareItemListener {
             Items.TOTEM_OF_UNDYING
     );
 
-    public void onClientTick(MinecraftClient client) {
+    public void onClientTick(Minecraft client) {
         if (client.player == null) {
             return;
         }
@@ -126,16 +126,15 @@ public class RareItemListener {
         tickCounter = 0;
 
         // Build current inventory counts for rare items
-        Map<String, Integer> currentCounts = new HashMap<>();
+        Map<Item, Integer> currentCounts = new HashMap<>();
 
         // Scan main inventory
-        for (int i = 0; i < client.player.getInventory().size(); i++) {
-            ItemStack stack = client.player.getInventory().getStack(i);
+        for (int i = 0; i < client.player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = client.player.getInventory().getItem(i);
             if (!stack.isEmpty()) {
                 String category = RARE_ITEMS.get(stack.getItem());
                 if (category != null) {
-                    String itemId = Registries.ITEM.getId(stack.getItem()).toString();
-                    currentCounts.merge(itemId, stack.getCount(), Integer::sum);
+                    currentCounts.merge(stack.getItem(), stack.getCount(), Integer::sum);
                 }
             }
         }
@@ -148,22 +147,26 @@ public class RareItemListener {
         }
 
         // Check for new items
-        for (Map.Entry<String, Integer> entry : currentCounts.entrySet()) {
-            String itemId = entry.getKey();
+        for (Map.Entry<Item, Integer> entry : currentCounts.entrySet()) {
+            Item item = entry.getKey();
             int currentCount = entry.getValue();
-            int lastCount = lastItemCounts.getOrDefault(itemId, 0);
+            int lastCount = lastItemCounts.getOrDefault(item, 0);
 
             // Player gained this item
             if (currentCount > lastCount) {
                 int gained = currentCount - lastCount;
-                Item item = Registries.ITEM.get(net.minecraft.util.Identifier.of(itemId));
+                var itemKey = BuiltInRegistries.ITEM.getKey(item);
+                if (itemKey == null) {
+                    continue;
+                }
+                String itemId = itemKey.toString();
                 String category = RARE_ITEMS.get(item);
 
                 if (category != null) {
                     // Debounce per item type (30 second cooldown)
                     if (debouncer.shouldTrigger("rare_item_" + itemId, 30000)) {
                         boolean isVeryRare = VERY_RARE.contains(category);
-                        String simpleName = itemId.replace("minecraft:", "");
+                        String simpleName = itemKey.getPath();
 
                         EventPacket packet = new EventPacket("rare_item_found")
                                 .addMetadata("item", simpleName)
@@ -177,7 +180,7 @@ public class RareItemListener {
                     // Also emit item_obtained for milestone items (longer cooldown)
                     if (MILESTONE_ITEMS.contains(item)) {
                         if (debouncer.shouldTrigger("milestone_" + itemId, 60000)) {
-                            String simpleName = itemId.replace("minecraft:", "");
+                            String simpleName = itemKey.getPath();
                             EventPacket milestonePacket = new EventPacket("item_obtained")
                                     .addMetadata("item", simpleName);
 

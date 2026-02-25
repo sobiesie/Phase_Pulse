@@ -1,9 +1,9 @@
 package com.phasepal.phasepulse.mixin;
 
 import com.phasepal.phasepulse.event.player.AdvancementListener;
-import net.minecraft.advancement.AdvancementEntry;
-import net.minecraft.client.toast.AdvancementToast;
-import net.minecraft.client.toast.ToastManager;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.client.gui.components.toasts.AdvancementToast;
+import net.minecraft.client.gui.components.toasts.ToastManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -15,8 +15,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(ToastManager.class)
 public class AdvancementMixin {
-    @Inject(method = "add", at = @At("HEAD"))
-    private void onToastAdded(net.minecraft.client.toast.Toast toast, CallbackInfo ci) {
+    @Inject(method = "addToast", at = @At("HEAD"))
+    private void onToastAdded(net.minecraft.client.gui.components.toasts.Toast toast, CallbackInfo ci) {
         // Check if this is an advancement toast
         if (toast instanceof AdvancementToast advancementToast) {
             // Use reflection or accessor to get the advancement from the toast

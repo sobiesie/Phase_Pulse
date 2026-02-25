@@ -3,9 +3,9 @@ package com.phasepal.phasepulse.event.world;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.Holder;
+import net.minecraft.world.level.biome.Biome;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -29,8 +29,8 @@ public class BiomeTracker {
     private String pendingBiome = null; // Biome we're potentially changing to
     private int pendingCount = 0; // How many consecutive checks in pendingBiome
 
-    public void onClientTick(MinecraftClient client) {
-        if (client.world == null || client.player == null) {
+    public void onClientTick(Minecraft client) {
+        if (client.level == null || client.player == null) {
             return;
         }
 
@@ -42,10 +42,8 @@ public class BiomeTracker {
         tickCounter = 0;
 
         // Get current biome
-        RegistryEntry<Biome> biomeEntry = client.world.getBiome(client.player.getBlockPos());
-        String biomeName = biomeEntry.getKey()
-                .map(key -> key.getValue().toString())
-                .orElse("unknown");
+        Holder<Biome> biomeEntry = client.level.getBiome(client.player.blockPosition());
+        String biomeName = biomeEntry.getKey().identifier().toString();
 
         // If we're in the same biome as confirmed, nothing to do
         if (biomeName.equals(lastBiome)) {

@@ -3,7 +3,7 @@ package com.phasepal.phasepulse.event.milestone;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 /**
  * Tracks when player survives their first night without sleeping.
@@ -16,17 +16,17 @@ public class FirstNightTracker {
     private State state = State.IDLE;
     private boolean sleptThisNight = false;
 
-    public void onClientTick(MinecraftClient client) {
-        if (client.world == null || client.player == null || state == State.COMPLETED) {
+    public void onClientTick(Minecraft client) {
+        if (client.level == null || client.player == null || state == State.COMPLETED) {
             return;
         }
 
         // Only track in overworld
-        if (!client.world.getRegistryKey().getValue().getPath().equals("overworld")) {
+        if (!client.level.dimension().identifier().getPath().equals("overworld")) {
             return;
         }
 
-        long timeOfDay = client.world.getTimeOfDay() % 24000;
+        long timeOfDay = client.level.getDayTime() % 24000;
         boolean isNight = timeOfDay >= 13000 && timeOfDay < 23000;
         boolean isDawn = timeOfDay >= 0 && timeOfDay < 1000;
 

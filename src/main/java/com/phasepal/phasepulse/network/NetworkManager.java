@@ -3,8 +3,8 @@ package com.phasepal.phasepulse.network;
 import com.phasepal.phasepulse.PhasePulse;
 import com.phasepal.phasepulse.config.ConfigManager;
 import com.phasepal.phasepulse.config.PhasePulseConfig;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ServerInfo;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
 
 /**
  * Singleton network manager for Phase_Pulse.
@@ -106,9 +106,9 @@ public class NetworkManager {
      * Adds world_name, world_type, and dimension to every event.
      */
     private void injectWorldMetadata(EventPacket packet) {
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
 
-        if (client.world == null) {
+        if (client.level == null) {
             return;
         }
 
@@ -116,14 +116,14 @@ public class NetworkManager {
         String worldName;
         String worldType;
 
-        ServerInfo serverInfo = client.getCurrentServerEntry();
+        ServerData serverInfo = client.getCurrentServer();
         if (serverInfo != null) {
             // Multiplayer server
             worldName = serverInfo.name;
             worldType = "multiplayer";
-        } else if (client.isIntegratedServerRunning() && client.getServer() != null) {
+        } else if (client.hasSingleplayerServer()) {
             // Singleplayer world
-            worldName = client.getServer().getSaveProperties().getLevelName();
+            worldName = "singleplayer";
             worldType = "singleplayer";
         } else {
             worldName = "unknown";
@@ -131,7 +131,7 @@ public class NetworkManager {
         }
 
         // Get dimension (overworld, the_nether, the_end)
-        String dimension = client.world.getRegistryKey().getValue().getPath();
+        String dimension = client.level.dimension().identifier().getPath();
 
         packet.addMetadata("world_name", worldName);
         packet.addMetadata("world_type", worldType);

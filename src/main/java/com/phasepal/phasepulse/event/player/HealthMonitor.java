@@ -2,7 +2,7 @@ package com.phasepal.phasepulse.event.player;
 
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 /**
  * Monitors player health and sends low health events.
@@ -14,7 +14,7 @@ public class HealthMonitor {
 
     private boolean wasLowHealth = false;
 
-    public void onClientTick(MinecraftClient client) {
+    public void onClientTick(Minecraft client) {
         if (client.player == null) {
             wasLowHealth = false;
             return;

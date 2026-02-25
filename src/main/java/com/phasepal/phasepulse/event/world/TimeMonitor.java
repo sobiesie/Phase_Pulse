@@ -3,7 +3,7 @@ package com.phasepal.phasepulse.event.world;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 /**
  * Monitors world time for day/night transitions.
@@ -20,8 +20,8 @@ public class TimeMonitor {
     private boolean isNight = false;
     private int tickCounter = 0;
 
-    public void onClientTick(MinecraftClient client) {
-        if (client.world == null) {
+    public void onClientTick(Minecraft client) {
+        if (client.level == null) {
             return;
         }
 
@@ -32,14 +32,14 @@ public class TimeMonitor {
         }
         tickCounter = 0;
 
-        long timeOfDay = client.world.getTimeOfDay() % 24000;
+        long timeOfDay = client.level.getDayTime() % 24000;
         boolean shouldBeNight = timeOfDay >= 12000;
 
         // Detect day start transition (night -> day)
         if (isNight && !shouldBeNight && timeOfDay >= DAY_START && timeOfDay <= DAY_END) {
             if (debouncer.shouldTrigger("day_start")) {
                 EventPacket packet = new EventPacket("day_start")
-                        .addMetadata("world_time", client.world.getTimeOfDay());
+                        .addMetadata("world_time", client.level.getDayTime());
 
                 NetworkManager.getInstance().sendEvent(packet);
             }
@@ -49,7 +49,7 @@ public class TimeMonitor {
         if (!isNight && shouldBeNight && timeOfDay >= NIGHT_START && timeOfDay <= NIGHT_END) {
             if (debouncer.shouldTrigger("night_start")) {
                 EventPacket packet = new EventPacket("night_start")
-                        .addMetadata("world_time", client.world.getTimeOfDay());
+                        .addMetadata("world_time", client.level.getDayTime());
 
                 NetworkManager.getInstance().sendEvent(packet);
             }

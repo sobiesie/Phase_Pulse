@@ -3,7 +3,7 @@ package com.phasepal.phasepulse.event.world;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 /**
  * Tracks dimension changes (Overworld, Nether, End).
@@ -12,12 +12,12 @@ public class DimensionChangeListener {
     private final EventDebouncer debouncer = new EventDebouncer();
     private String lastDimension = null;
 
-    public void onClientTick(MinecraftClient client) {
-        if (client.world == null || client.player == null) {
+    public void onClientTick(Minecraft client) {
+        if (client.level == null || client.player == null) {
             return;
         }
 
-        String currentDimension = client.world.getRegistryKey().getValue().toString();
+        String currentDimension = client.level.dimension().identifier().toString();
 
         if (lastDimension == null) {
             lastDimension = currentDimension;

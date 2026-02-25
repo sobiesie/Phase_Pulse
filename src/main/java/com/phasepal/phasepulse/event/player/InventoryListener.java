@@ -3,9 +3,9 @@ package com.phasepal.phasepulse.event.player;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.*;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.*;
 
 /**
  * Monitors player inventory/container screen time.
@@ -23,14 +23,14 @@ public class InventoryListener {
     private long screenOpenedTime = 0;
     private String currentScreenType = null;
 
-    public void onClientTick(MinecraftClient client) {
-        Screen currentScreen = client.currentScreen;
-        boolean isInInventoryScreen = isInventoryScreen(currentScreen);
+    public void onClientTick(Minecraft client) {
+        Screen screen = client.screen;
+        boolean isInInventoryScreen = isInventoryScreen(screen);
 
         // Player just opened an inventory screen
         if (isInInventoryScreen && !wasInInventoryScreen) {
             screenOpenedTime = System.currentTimeMillis();
-            currentScreenType = getScreenType(currentScreen);
+            currentScreenType = getScreenType(screen);
         }
 
         // Player just closed an inventory screen
@@ -67,10 +67,10 @@ public class InventoryListener {
         }
 
         return screen instanceof InventoryScreen
-                || screen instanceof CreativeInventoryScreen
-                || screen instanceof GenericContainerScreen  // Chests, barrels, etc.
+                || screen instanceof CreativeModeInventoryScreen
+                || screen instanceof ContainerScreen  // Chests, barrels, etc.
                 || screen instanceof ShulkerBoxScreen
-                || screen instanceof Generic3x3ContainerScreen  // Dispenser, dropper
+                || screen instanceof DispenserScreen  // Dispenser, dropper
                 || screen instanceof HopperScreen
                 || screen instanceof FurnaceScreen
                 || screen instanceof BlastFurnaceScreen
@@ -93,10 +93,10 @@ public class InventoryListener {
      */
     private String getScreenType(Screen screen) {
         if (screen instanceof InventoryScreen) return "inventory";
-        if (screen instanceof CreativeInventoryScreen) return "creative";
-        if (screen instanceof GenericContainerScreen) return "chest";
+        if (screen instanceof CreativeModeInventoryScreen) return "creative";
+        if (screen instanceof ContainerScreen) return "chest";
         if (screen instanceof ShulkerBoxScreen) return "shulker_box";
-        if (screen instanceof Generic3x3ContainerScreen) return "dispenser";
+        if (screen instanceof DispenserScreen) return "dispenser";
         if (screen instanceof HopperScreen) return "hopper";
         if (screen instanceof FurnaceScreen) return "furnace";
         if (screen instanceof BlastFurnaceScreen) return "blast_furnace";

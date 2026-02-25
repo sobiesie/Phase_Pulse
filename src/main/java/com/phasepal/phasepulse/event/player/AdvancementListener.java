@@ -4,8 +4,8 @@ import com.phasepal.phasepulse.PhasePulse;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.advancement.AdvancementEntry;
-import net.minecraft.client.toast.AdvancementToast;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.client.gui.components.toasts.AdvancementToast;
 
 import java.lang.reflect.Field;
 
@@ -21,7 +21,7 @@ public class AdvancementListener {
         // Find the advancement field in AdvancementToast using reflection
         try {
             for (Field field : AdvancementToast.class.getDeclaredFields()) {
-                if (field.getType() == AdvancementEntry.class) {
+                if (field.getType() == AdvancementHolder.class) {
                     field.setAccessible(true);
                     advancementField = field;
                     break;
@@ -39,7 +39,7 @@ public class AdvancementListener {
     public static void onAdvancementToastShown(AdvancementToast toast) {
         try {
             if (advancementField != null) {
-                AdvancementEntry advancement = (AdvancementEntry) advancementField.get(toast);
+                AdvancementHolder advancement = (AdvancementHolder) advancementField.get(toast);
                 if (advancement != null) {
                     onAdvancementEarned(advancement);
                 }
@@ -53,7 +53,7 @@ public class AdvancementListener {
      * Called when player earns an advancement.
      * @param advancement The advancement earned
      */
-    public static void onAdvancementEarned(AdvancementEntry advancement) {
+    public static void onAdvancementEarned(AdvancementHolder advancement) {
         String advancementId = advancement.id().toString();
 
         // Filter out recipe advancements (they're spammy and auto-unlock)

@@ -3,11 +3,11 @@ package com.phasepal.phasepulse.event.player;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -23,26 +23,26 @@ public class StatusEffectListener {
     private final Set<String> activeHarmfulEffects = new HashSet<>();
     private int tickCounter = 0;
 
-    // Set of harmful effects to track
-    private static final Set<RegistryEntry<StatusEffect>> HARMFUL_EFFECTS = Set.of(
-            StatusEffects.POISON,
-            StatusEffects.WITHER,
-            StatusEffects.HUNGER,
-            StatusEffects.MINING_FATIGUE,
-            StatusEffects.WEAKNESS,
-            StatusEffects.BLINDNESS,
-            StatusEffects.NAUSEA,
-            StatusEffects.SLOWNESS,
-            StatusEffects.LEVITATION,
-            StatusEffects.UNLUCK,
-            StatusEffects.DARKNESS,
-            StatusEffects.INFESTED,
-            StatusEffects.OOZING,
-            StatusEffects.WEAVING,
-            StatusEffects.WIND_CHARGED
+    // Track by namespaced IDs so mapping differences do not break detection.
+    private static final Set<String> HARMFUL_EFFECTS = Set.of(
+            "minecraft:poison",
+            "minecraft:wither",
+            "minecraft:hunger",
+            "minecraft:mining_fatigue",
+            "minecraft:weakness",
+            "minecraft:blindness",
+            "minecraft:nausea",
+            "minecraft:slowness",
+            "minecraft:levitation",
+            "minecraft:unluck",
+            "minecraft:darkness",
+            "minecraft:infested",
+            "minecraft:oozing",
+            "minecraft:weaving",
+            "minecraft:wind_charged"
     );
 
-    public void onClientTick(MinecraftClient client) {
+    public void onClientTick(Minecraft client) {
         if (client.player == null) {
             return;
         }
@@ -58,11 +58,16 @@ public class StatusEffectListener {
         Set<String> currentEffects = new HashSet<>();
 
         // Check all active status effects
-        for (StatusEffectInstance effectInstance : client.player.getStatusEffects()) {
-            RegistryEntry<StatusEffect> effect = effectInstance.getEffectType();
+        for (MobEffectInstance effectInstance : client.player.getActiveEffects()) {
+            Holder<MobEffect> effect = effectInstance.getEffect();
+            var effectId = BuiltInRegistries.MOB_EFFECT.getKey(effect.value());
+            if (effectId == null) {
+                continue;
+            }
 
-            if (HARMFUL_EFFECTS.contains(effect)) {
-                String effectName = getEffectName(effect);
+            String effectIdString = effectId.toString();
+            if (HARMFUL_EFFECTS.contains(effectIdString)) {
+                String effectName = getEffectName(effectIdString);
                 currentEffects.add(effectName);
 
                 // Only send event if this is a new effect (not already active)
@@ -77,7 +82,7 @@ public class StatusEffectListener {
                                 .addMetadata("effect", effectName)
                                 .addMetadata("amplifier", amplifier)
                                 .addMetadata("duration_seconds", durationSeconds)
-                                .addMetadata("is_damaging", isDamagingEffect(effect));
+                                .addMetadata("is_damaging", isDamagingEffect(effectIdString));
 
                         NetworkManager.getInstance().sendEvent(packet);
                     }
@@ -93,15 +98,14 @@ public class StatusEffectListener {
     /**
      * Gets a clean effect name from the registry entry.
      */
-    private String getEffectName(RegistryEntry<StatusEffect> effect) {
-        // Extract the effect ID (e.g., "minecraft:poison" -> "poison")
-        return effect.getIdAsString().replace("minecraft:", "");
+    private String getEffectName(String effectId) {
+        return effectId.replace("minecraft:", "");
     }
 
     /**
      * Checks if the effect causes direct damage to the player.
      */
-    private boolean isDamagingEffect(RegistryEntry<StatusEffect> effect) {
-        return effect == StatusEffects.POISON || effect == StatusEffects.WITHER;
+    private boolean isDamagingEffect(String effectId) {
+        return "minecraft:poison".equals(effectId) || "minecraft:wither".equals(effectId);
     }
 }

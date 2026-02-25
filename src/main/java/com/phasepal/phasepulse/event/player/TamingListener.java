@@ -3,8 +3,8 @@ package com.phasepal.phasepulse.event.player;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.registry.Registries;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.Map;
 
@@ -47,12 +47,12 @@ public class TamingListener {
      * Called from TamingMixin when an animal is tamed.
      * @param entity The tamed entity
      */
-    public static void onAnimalTamed(TameableEntity entity) {
-        if (!entity.getEntityWorld().isClient()) {
+    public static void onAnimalTamed(TamableAnimal entity) {
+        if (!entity.level().isClientSide()) {
             return;
         }
 
-        String entityId = Registries.ENTITY_TYPE.getId(entity.getType()).toString();
+        String entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).toString();
         String animalName = ANIMAL_NAMES.getOrDefault(entityId, entityId.replace("minecraft:", ""));
         String trait = ANIMAL_TRAITS.getOrDefault(animalName, "companion");
 

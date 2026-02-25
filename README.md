@@ -1,6 +1,6 @@
 # Phase_Pulse
 
-A lightweight Fabric mod for Minecraft 1.21.11 that bridges in-game events to the [Phase Pal](https://phasepal.com) desktop companion app. Sends real-time player and world events via local TCP to enable ambient companion reactions.
+A lightweight NeoForge mod for Minecraft 1.21.11 that bridges in-game events to the [Phase Pal](https://phasepal.com) desktop companion app. Sends real-time player and world events via local TCP to enable ambient companion reactions.
 
 ## Features
 
@@ -12,17 +12,15 @@ A lightweight Fabric mod for Minecraft 1.21.11 that bridges in-game events to th
 ## Requirements
 
 - Minecraft 1.21.11
-- Fabric Loader 0.18.4+
-- Fabric API 0.141.1+1.21.11
+- NeoForge 21.11.37-beta+
 - Java 21
 
 ## Installation
 
-1. Install [Fabric Loader](https://fabricmc.net/use/installer/)
-2. Download [Fabric API](https://modrinth.com/mod/fabric-api)
-3. Download `phase-pulse-x.x.x.jar` from releases
-4. Place both JARs in your `.minecraft/mods` folder
-5. Launch Minecraft with the Fabric profile
+1. Install [NeoForge](https://neoforged.net/)
+2. Download `phase-pulse-x.x.x.jar` from releases
+3. Place the JAR in your `.minecraft/mods` folder
+4. Launch Minecraft with the NeoForge profile
 
 ## Commands
 

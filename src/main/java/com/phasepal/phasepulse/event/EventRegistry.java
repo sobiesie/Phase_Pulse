@@ -13,7 +13,7 @@ import com.phasepal.phasepulse.event.world.DimensionChangeListener;
 import com.phasepal.phasepulse.event.world.StructureTracker;
 import com.phasepal.phasepulse.event.world.TimeMonitor;
 import com.phasepal.phasepulse.event.world.WeatherMonitor;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.minecraft.client.Minecraft;
 
 /**
  * Centralized event registration hub.
@@ -71,7 +71,7 @@ public class EventRegistry {
             blockBrokenListener = new BlockBrokenListener();
             firstNightTracker = new FirstNightTracker();
 
-            // Register Fabric event listeners
+            // Register external event listeners
             sleepListener.register();
             blockPlacedListener.register();
             // blockBrokenListener uses mixin (BlockBreakMixin)
@@ -106,76 +106,78 @@ public class EventRegistry {
             PhasePulse.LOGGER.info("Registered combat events");
         }
 
-        // Single consolidated tick handler for all monitors (reduces per-tick overhead)
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.player == null) {
-                return;
-            }
-
-            // Player monitors
-            if (healthMonitor != null) {
-                healthMonitor.onClientTick(client);
-            }
-            if (hungerMonitor != null) {
-                hungerMonitor.onClientTick(client);
-            }
-            if (drowningMonitor != null) {
-                drowningMonitor.onClientTick(client);
-            }
-            if (hurtListener != null) {
-                hurtListener.onClientTick(client);
-            }
-            if (deathListener != null) {
-                deathListener.onClientTick(client);
-            }
-            if (statusEffectListener != null) {
-                statusEffectListener.onClientTick(client);
-            }
-            if (inventoryListener != null) {
-                inventoryListener.onClientTick(client);
-            }
-            if (rareItemListener != null) {
-                rareItemListener.onClientTick(client);
-            }
-
-            // World monitors (require world)
-            if (client.world != null) {
-                if (timeMonitor != null) {
-                    timeMonitor.onClientTick(client);
-                }
-                if (weatherMonitor != null) {
-                    weatherMonitor.onClientTick(client);
-                }
-                if (biomeTracker != null) {
-                    biomeTracker.onClientTick(client);
-                }
-                if (dimensionChangeListener != null) {
-                    dimensionChangeListener.onClientTick(client);
-                }
-                if (structureTracker != null) {
-                    structureTracker.onClientTick(client);
-                }
-
-                // Milestone trackers
-                if (firstNightTracker != null) {
-                    firstNightTracker.onClientTick(client);
-                }
-
-                // Combat monitors
-                if (combatTracker != null) {
-                    combatTracker.onClientTick();
-                }
-                if (hostileMobDetector != null) {
-                    hostileMobDetector.onClientTick(client);
-                }
-                if (mobKilledListener != null) {
-                    mobKilledListener.onClientTick(client);
-                }
-            }
-        });
-
         registered = true;
         PhasePulse.LOGGER.info("Event registration complete");
+    }
+
+    /**
+     * Processes all event monitors for the current client tick.
+     */
+    public static void onClientTick(Minecraft client) {
+        if (!registered || client.player == null) {
+            return;
+        }
+
+        // Player monitors
+        if (healthMonitor != null) {
+            healthMonitor.onClientTick(client);
+        }
+        if (hungerMonitor != null) {
+            hungerMonitor.onClientTick(client);
+        }
+        if (drowningMonitor != null) {
+            drowningMonitor.onClientTick(client);
+        }
+        if (hurtListener != null) {
+            hurtListener.onClientTick(client);
+        }
+        if (deathListener != null) {
+            deathListener.onClientTick(client);
+        }
+        if (statusEffectListener != null) {
+            statusEffectListener.onClientTick(client);
+        }
+        if (inventoryListener != null) {
+            inventoryListener.onClientTick(client);
+        }
+        if (rareItemListener != null) {
+            rareItemListener.onClientTick(client);
+        }
+
+        // World monitors (require world)
+        if (client.level != null) {
+            if (timeMonitor != null) {
+                timeMonitor.onClientTick(client);
+            }
+            if (weatherMonitor != null) {
+                weatherMonitor.onClientTick(client);
+            }
+            if (biomeTracker != null) {
+                biomeTracker.onClientTick(client);
+            }
+            if (dimensionChangeListener != null) {
+                dimensionChangeListener.onClientTick(client);
+            }
+            if (structureTracker != null) {
+                structureTracker.onClientTick(client);
+            }
+
+            // Milestone trackers
+            if (firstNightTracker != null) {
+                firstNightTracker.onClientTick(client);
+            }
+
+            // Combat monitors
+            if (combatTracker != null) {
+                combatTracker.onClientTick();
+            }
+            if (hostileMobDetector != null) {
+                hostileMobDetector.onClientTick(client);
+            }
+            if (mobKilledListener != null) {
+                mobKilledListener.onClientTick(client);
+            }
+        }
     }
 
     /**

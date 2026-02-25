@@ -3,10 +3,10 @@ package com.phasepal.phasepulse.event.combat;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.util.math.Box;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 
@@ -30,12 +30,12 @@ public class HostileMobDetector {
      * @return true if hostile mobs are within COMBAT_RADIUS blocks
      */
     public static boolean areHostilesNearby() {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.world == null || client.player == null) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.level == null || client.player == null) {
             return false;
         }
 
-        Box searchBox = new Box(
+        AABB searchBox = new AABB(
                 client.player.getX() - COMBAT_RADIUS,
                 client.player.getY() - COMBAT_RADIUS,
                 client.player.getZ() - COMBAT_RADIUS,
@@ -44,12 +44,12 @@ public class HostileMobDetector {
                 client.player.getZ() + COMBAT_RADIUS
         );
 
-        return client.world.getOtherEntities(client.player, searchBox).stream()
-                .anyMatch(entity -> entity instanceof HostileEntity);
+        return client.level.getEntities(client.player, searchBox, entity -> true).stream()
+                .anyMatch(entity -> entity instanceof Enemy);
     }
 
-    public void onClientTick(MinecraftClient client) {
-        if (client.world == null || client.player == null) {
+    public void onClientTick(Minecraft client) {
+        if (client.level == null || client.player == null) {
             return;
         }
 
@@ -61,18 +61,18 @@ public class HostileMobDetector {
         tickCounter = 0;
 
         // Create bounding box around player (limited vertical range to avoid cave mobs)
-        Box searchBox = client.player.getBoundingBox().expand(DETECTION_RADIUS, DETECTION_RADIUS_VERTICAL, DETECTION_RADIUS);
+        AABB searchBox = client.player.getBoundingBox().inflate(DETECTION_RADIUS, DETECTION_RADIUS_VERTICAL, DETECTION_RADIUS);
 
         // Find hostile entities in range - single pass to count and get first type
-        List<Entity> nearbyEntities = client.world.getOtherEntities(client.player, searchBox);
+        List<Entity> nearbyEntities = client.level.getEntities(client.player, searchBox, entity -> true);
         int hostileCount = 0;
         String firstMobType = null;
 
         for (Entity entity : nearbyEntities) {
-            if (entity instanceof HostileEntity) {
+            if (entity instanceof Enemy) {
                 hostileCount++;
                 if (firstMobType == null) {
-                    firstMobType = entity.getType().getTranslationKey();
+                    firstMobType = entity.getType().getDescriptionId();
                 }
             }
         }

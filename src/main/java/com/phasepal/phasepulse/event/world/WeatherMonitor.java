@@ -3,7 +3,7 @@ package com.phasepal.phasepulse.event.world;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 /**
  * Monitors weather changes (clear, rain, thunder).
@@ -21,8 +21,8 @@ public class WeatherMonitor {
         THUNDER
     }
 
-    public void onClientTick(MinecraftClient client) {
-        if (client.world == null) {
+    public void onClientTick(Minecraft client) {
+        if (client.level == null) {
             return;
         }
 
@@ -34,9 +34,9 @@ public class WeatherMonitor {
         tickCounter = 0;
 
         WeatherState currentWeather;
-        if (client.world.isThundering()) {
+        if (client.level.isThundering()) {
             currentWeather = WeatherState.THUNDER;
-        } else if (client.world.isRaining()) {
+        } else if (client.level.isRaining()) {
             currentWeather = WeatherState.RAIN;
         } else {
             currentWeather = WeatherState.CLEAR;

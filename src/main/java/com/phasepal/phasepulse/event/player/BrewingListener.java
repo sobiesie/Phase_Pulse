@@ -3,8 +3,8 @@ package com.phasepal.phasepulse.event.player;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Handles brewing events.
@@ -17,7 +17,7 @@ public class BrewingListener {
      * @param potionStack The potion brewed
      */
     public static void onPotionBrewed(ItemStack potionStack) {
-        String potionId = Registries.ITEM.getId(potionStack.getItem()).toString().replace("minecraft:", "");
+        String potionId = BuiltInRegistries.ITEM.getKey(potionStack.getItem()).toString().replace("minecraft:", "");
         int count = potionStack.getCount();
 
         if (debouncer.shouldTrigger("potion_brewed", 500)) {

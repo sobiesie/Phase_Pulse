@@ -3,9 +3,9 @@ package com.phasepal.phasepulse.event.player;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.village.TradeOffer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.trading.MerchantOffer;
 
 /**
  * Handles villager trading events.
@@ -18,10 +18,10 @@ public class TradingListener {
      * Called when a player completes a trade with a villager.
      * @param offer The trade offer completed
      */
-    public static void onTradeCompleted(TradeOffer offer) {
+    public static void onTradeCompleted(MerchantOffer offer) {
         // Trade notifications are sent when the result slot is taken
-        ItemStack output = offer.getSellItem();
-        String outputItem = Registries.ITEM.getId(output.getItem()).toString().replace("minecraft:", "");
+        ItemStack output = offer.getResult();
+        String outputItem = BuiltInRegistries.ITEM.getKey(output.getItem()).toString().replace("minecraft:", "");
         int count = output.getCount();
 
         // Debounce to prevent spam from fast trading (500ms cooldown)
@@ -32,7 +32,7 @@ public class TradingListener {
         EventPacket packet = new EventPacket("villager_trade")
                 .addMetadata("item", outputItem)
                 .addMetadata("count", count)
-                .addMetadata("experience", offer.getMerchantExperience());
+                .addMetadata("experience", offer.getXp());
 
         NetworkManager.getInstance().sendEvent(packet);
     }

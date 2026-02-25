@@ -3,13 +3,13 @@ package com.phasepal.phasepulse.event.combat;
 import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.Box;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.AABB;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,13 +34,13 @@ public class MobKilledListener {
      * Called when the player attacks an entity (from HurtListener or attack event).
      */
     public static void onPlayerAttackedEntity(Entity target) {
-        if (target instanceof LivingEntity && !(target instanceof PlayerEntity)) {
+        if (target instanceof LivingEntity && !(target instanceof Player)) {
             attackedEntities.put(target.getId(), System.currentTimeMillis());
         }
     }
 
-    public void onClientTick(MinecraftClient client) {
-        if (client.player == null || client.world == null) {
+    public void onClientTick(Minecraft client) {
+        if (client.player == null || client.level == null) {
             return;
         }
 
@@ -59,12 +59,12 @@ public class MobKilledListener {
         }
 
         // Check nearby entities for death
-        Box searchBox = client.player.getBoundingBox().expand(TRACKING_RANGE);
-        for (Entity entity : client.world.getOtherEntities(client.player, searchBox)) {
+        AABB searchBox = client.player.getBoundingBox().inflate(TRACKING_RANGE);
+        for (Entity entity : client.level.getEntities(client.player, searchBox, entity -> true)) {
             if (!(entity instanceof LivingEntity living)) {
                 continue;
             }
-            if (entity instanceof PlayerEntity) {
+            if (entity instanceof Player) {
                 continue;
             }
 
@@ -86,7 +86,7 @@ public class MobKilledListener {
                     EventPacket packet = new EventPacket("mob_killed")
                             .addMetadata("mob_type", mobType)
                             .addMetadata("is_hostile", living instanceof Monster)
-                            .addMetadata("is_animal", living instanceof AnimalEntity);
+                            .addMetadata("is_animal", living instanceof Animal);
 
                     NetworkManager.getInstance().sendEvent(packet);
                 }
@@ -107,8 +107,8 @@ public class MobKilledListener {
         }
 
         // Also track attack via player's attack target
-        Entity attackTarget = client.player.getAttacking();
-        if (attackTarget instanceof LivingEntity && !(attackTarget instanceof PlayerEntity)) {
+        Entity attackTarget = client.player.getLastHurtMob();
+        if (attackTarget instanceof LivingEntity && !(attackTarget instanceof Player)) {
             synchronized (attackedEntities) {
                 attackedEntities.put(attackTarget.getId(), now);
             }

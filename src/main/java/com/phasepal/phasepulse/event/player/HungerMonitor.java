@@ -2,7 +2,7 @@ package com.phasepal.phasepulse.event.player;
 
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 /**
  * Monitors player hunger and sends low hunger events.
@@ -14,14 +14,14 @@ public class HungerMonitor {
 
     private boolean wasLowHunger = false;
 
-    public void onClientTick(MinecraftClient client) {
+    public void onClientTick(Minecraft client) {
         if (client.player == null) {
             wasLowHunger = false;
             return;
         }
 
-        int hunger = client.player.getHungerManager().getFoodLevel();
-        float saturation = client.player.getHungerManager().getSaturationLevel();
+        int hunger = client.player.getFoodData().getFoodLevel();
+        float saturation = client.player.getFoodData().getSaturationLevel();
 
         boolean isLowHunger = hunger < LOW_HUNGER_THRESHOLD;
 

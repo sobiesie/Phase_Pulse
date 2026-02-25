@@ -2,7 +2,7 @@ package com.phasepal.phasepulse.event.player;
 
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 /**
  * Monitors player air level (drowning detection).
@@ -14,14 +14,14 @@ public class DrowningMonitor {
 
     private boolean wasDrowning = false;
 
-    public void onClientTick(MinecraftClient client) {
+    public void onClientTick(Minecraft client) {
         if (client.player == null) {
             wasDrowning = false;
             return;
         }
 
-        int air = client.player.getAir();
-        int maxAir = client.player.getMaxAir();
+        int air = client.player.getAirSupply();
+        int maxAir = client.player.getMaxAirSupply();
 
         boolean isDrowning = air < DROWNING_THRESHOLD && air < maxAir;
 
