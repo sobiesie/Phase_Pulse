@@ -28,7 +28,6 @@ public final class PhasePulseClient {
 			// Register event listeners
 			EventRegistry.registerAll();
 
-			// NeoForge client command hookup is pending; keep stub call for parity.
 			PalCommand.register();
 		} else {
 			PhasePulse.LOGGER.info("Phase_Pulse is disabled in configuration");

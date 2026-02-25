@@ -131,6 +131,9 @@ public class EventRegistry {
         if (hurtListener != null) {
             hurtListener.onClientTick(client);
         }
+        if (sleepListener != null) {
+            sleepListener.onClientTick(client);
+        }
         if (deathListener != null) {
             deathListener.onClientTick(client);
         }

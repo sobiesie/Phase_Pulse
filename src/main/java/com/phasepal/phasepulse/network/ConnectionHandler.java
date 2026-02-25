@@ -6,9 +6,12 @@ import com.phasepal.phasepulse.config.PhasePulseConfig;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -22,6 +25,8 @@ public class ConnectionHandler {
     private final AtomicBoolean connected = new AtomicBoolean(false);
     private long lastConnectionAttempt = 0;
     private static final long RECONNECT_DELAY_MS = 5000; // 5 seconds between reconnect attempts
+    private static final long FAILURE_LOG_THROTTLE_MS = 15000; // avoid log spam
+    private long lastFailureLogTime = 0;
 
     public ConnectionHandler(PhasePulseConfig config) {
         this.config = config;
@@ -43,28 +48,69 @@ public class ConnectionHandler {
         }
         lastConnectionAttempt = now;
 
+        List<String> errors = new ArrayList<>();
         try {
-            socket = new Socket();
-            socket.connect(new InetSocketAddress(config.host, config.port), config.connectionTimeoutMs);
-            socket.setTcpNoDelay(true); // Disable Nagle's algorithm for low latency
-            socket.setSoTimeout(1000); // 1 second read timeout
+            InetAddress[] addresses = InetAddress.getAllByName(config.host);
+            for (InetAddress address : addresses) {
+                try {
+                    Socket attemptSocket = new Socket();
+                    attemptSocket.connect(new InetSocketAddress(address, config.port), config.connectionTimeoutMs);
+                    attemptSocket.setTcpNoDelay(true); // Disable Nagle's algorithm for low latency
+                    attemptSocket.setSoTimeout(1000); // 1 second read timeout
 
-            writer = new PrintWriter(
-                    new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8),
-                    false // Don't auto-flush on println
-            );
+                    PrintWriter attemptWriter = new PrintWriter(
+                            new OutputStreamWriter(attemptSocket.getOutputStream(), StandardCharsets.UTF_8),
+                            false // Don't auto-flush on println
+                    );
 
-            connected.set(true);
-            PhasePulse.LOGGER.info("Connected to Phase Pal at {}:{}", config.host, config.port);
-            return true;
-
-        } catch (IOException e) {
-            if (config.debugLogging) {
-                PhasePulse.LOGGER.debug("Failed to connect to Phase Pal: {}", e.getMessage());
+                    socket = attemptSocket;
+                    writer = attemptWriter;
+                    connected.set(true);
+                    PhasePulse.LOGGER.info("Connected to Phase Pal at {}:{} ({})", config.host, config.port, address.getHostAddress());
+                    return true;
+                } catch (IOException attemptError) {
+                    errors.add(address.getHostAddress() + " -> " + attemptError.getClass().getSimpleName() + ": " + attemptError.getMessage());
+                }
             }
-            disconnect();
-            return false;
+        } catch (Exception resolveError) {
+            errors.add("name resolution failed: " + resolveError.getClass().getSimpleName() + ": " + resolveError.getMessage());
         }
+
+        if (config.host.equalsIgnoreCase("localhost")) {
+            try {
+                Socket attemptSocket = new Socket();
+                attemptSocket.connect(new InetSocketAddress("127.0.0.1", config.port), config.connectionTimeoutMs);
+                attemptSocket.setTcpNoDelay(true);
+                attemptSocket.setSoTimeout(1000);
+
+                PrintWriter attemptWriter = new PrintWriter(
+                        new OutputStreamWriter(attemptSocket.getOutputStream(), StandardCharsets.UTF_8),
+                        false
+                );
+
+                socket = attemptSocket;
+                writer = attemptWriter;
+                connected.set(true);
+                PhasePulse.LOGGER.info("Connected to Phase Pal via IPv4 fallback at 127.0.0.1:{}", config.port);
+                return true;
+            } catch (IOException fallbackError) {
+                errors.add("127.0.0.1 fallback -> " + fallbackError.getClass().getSimpleName() + ": " + fallbackError.getMessage());
+            }
+        }
+
+        disconnect();
+
+        long currentTime = System.currentTimeMillis();
+        if (config.debugLogging || currentTime - lastFailureLogTime >= FAILURE_LOG_THROTTLE_MS) {
+            lastFailureLogTime = currentTime;
+            PhasePulse.LOGGER.warn(
+                    "Failed to connect to Phase Pal at {}:{} ({}). Retrying...",
+                    config.host,
+                    config.port,
+                    String.join("; ", errors)
+            );
+        }
+        return false;
     }
 
     /**
