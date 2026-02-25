@@ -4,9 +4,8 @@ import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.structure.Structure;
 
@@ -78,12 +77,6 @@ public class StructureTracker {
             return;
         }
 
-        // Get the structure registry to look up names
-        var structureRegistry = client.world.getRegistryManager().getOptional(RegistryKeys.STRUCTURE);
-        if (structureRegistry.isEmpty()) {
-            return;
-        }
-
         // Find structures in this chunk
         for (var entry : structureReferences.entrySet()) {
             Structure structure = entry.getKey();
@@ -91,7 +84,8 @@ public class StructureTracker {
 
             if (references != null && !references.isEmpty()) {
                 // Try to get the structure ID from the registry
-                var identifier = structureRegistry.get().getId(structure);
+                var structureRegistry = client.world.getRegistryManager().get(Registry.STRUCTURE_KEY);
+                var identifier = structureRegistry.getId(structure);
                 String structureId = identifier != null ? identifier.toString() : "unknown";
 
                 String friendlyName = simplifyStructureId(structureId);

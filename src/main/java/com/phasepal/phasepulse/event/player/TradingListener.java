@@ -4,7 +4,7 @@ import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.village.TradeOffer;
 
 /**
@@ -21,7 +21,7 @@ public class TradingListener {
     public static void onTradeCompleted(TradeOffer offer) {
         // Trade notifications are sent when the result slot is taken
         ItemStack output = offer.getSellItem();
-        String outputItem = Registries.ITEM.getId(output.getItem()).toString().replace("minecraft:", "");
+        String outputItem = Registry.ITEM.getId(output.getItem()).toString().replace("minecraft:", "");
         int count = output.getCount();
 
         // Debounce to prevent spam from fast trading (500ms cooldown)

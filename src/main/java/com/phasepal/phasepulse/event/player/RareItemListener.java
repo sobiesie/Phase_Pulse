@@ -5,7 +5,7 @@ import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
+import net.minecraft.util.registry.Registry;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -133,7 +133,7 @@ public class RareItemListener {
                 continue;
             }
 
-            String itemId = Registries.ITEM.getId(stack.getItem()).toString();
+            String itemId = Registry.ITEM.getId(stack.getItem()).toString();
             if (RARE_ITEMS.containsKey(itemId)) {
                 currentCounts.merge(itemId, stack.getCount(), Integer::sum);
             }

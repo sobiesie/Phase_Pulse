@@ -4,7 +4,7 @@ import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
+import net.minecraft.util.registry.Registry;
 
 /**
  * Handles fishing events.
@@ -17,7 +17,7 @@ public class FishingListener {
      * @param itemStack The item caught
      */
     public static void onItemCaught(ItemStack itemStack) {
-        String itemId = Registries.ITEM.getId(itemStack.getItem()).toString().replace("minecraft:", "");
+        String itemId = Registry.ITEM.getId(itemStack.getItem()).toString().replace("minecraft:", "");
         int count = itemStack.getCount();
 
         if (debouncer.shouldTrigger("fishing_catch", 1000)) {

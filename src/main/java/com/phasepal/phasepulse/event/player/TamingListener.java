@@ -4,7 +4,7 @@ import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.registry.Registries;
+import net.minecraft.util.registry.Registry;
 
 import java.util.Map;
 
@@ -52,7 +52,7 @@ public class TamingListener {
             return;
         }
 
-        String entityId = Registries.ENTITY_TYPE.getId(entity.getType()).toString();
+        String entityId = Registry.ENTITY_TYPE.getId(entity.getType()).toString();
         String animalName = ANIMAL_NAMES.getOrDefault(entityId, entityId.replace("minecraft:", ""));
         String trait = ANIMAL_TRAITS.getOrDefault(animalName, "companion");
 

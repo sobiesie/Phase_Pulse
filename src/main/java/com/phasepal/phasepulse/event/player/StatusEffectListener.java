@@ -7,8 +7,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -99,7 +99,7 @@ public class StatusEffectListener {
      * Gets a clean effect name from the registry entry.
      */
     private String getEffectName(StatusEffect effect) {
-        Identifier id = Registries.STATUS_EFFECT.getId(effect);
+        Identifier id = Registry.STATUS_EFFECT.getId(effect);
         if (id == null) {
             return "unknown";
         }

@@ -5,7 +5,7 @@ import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.registry.Registries;
+import net.minecraft.util.registry.Registry;
 
 /**
  * Handles animal breeding events.
@@ -23,7 +23,7 @@ public class BreedingListener {
         // Only track for the local player on the client side
         // Note: Breeding usually happens on the server, but some events or mixins might trigger on client
         if (parent1.getEntityWorld().isClient()) {
-            String entityId = Registries.ENTITY_TYPE.getId(parent1.getType()).toString().replace("minecraft:", "");
+            String entityId = Registry.ENTITY_TYPE.getId(parent1.getType()).toString().replace("minecraft:", "");
             
             // Debounce per animal type (10 second cooldown)
             if (!debouncer.shouldTrigger("animal_bred_" + entityId, 10000)) {
