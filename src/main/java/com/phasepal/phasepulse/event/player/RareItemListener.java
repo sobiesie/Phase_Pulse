@@ -4,9 +4,7 @@ import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 
 import java.util.HashMap;
@@ -25,76 +23,76 @@ public class RareItemListener {
     private int tickCounter = 0;
     private boolean initialized = false;
 
-    // Rare items to track with their categories
-    private static final Map<Item, String> RARE_ITEMS = Map.ofEntries(
+    // Rare items to track by string id, so missing 1.21 fields don't break 1.20.4 compilation
+    private static final Map<String, String> RARE_ITEMS = Map.ofEntries(
             // Music discs
-            Map.entry(Items.MUSIC_DISC_13, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_CAT, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_BLOCKS, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_CHIRP, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_FAR, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_MALL, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_MELLOHI, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_STAL, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_STRAD, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_WARD, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_11, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_WAIT, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_OTHERSIDE, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_5, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_PIGSTEP, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_RELIC, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_CREATOR, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_CREATOR_MUSIC_BOX, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_PRECIPICE, "music_disc"),
+            Map.entry("minecraft:music_disc_13", "music_disc"),
+            Map.entry("minecraft:music_disc_cat", "music_disc"),
+            Map.entry("minecraft:music_disc_blocks", "music_disc"),
+            Map.entry("minecraft:music_disc_chirp", "music_disc"),
+            Map.entry("minecraft:music_disc_far", "music_disc"),
+            Map.entry("minecraft:music_disc_mall", "music_disc"),
+            Map.entry("minecraft:music_disc_mellohi", "music_disc"),
+            Map.entry("minecraft:music_disc_stal", "music_disc"),
+            Map.entry("minecraft:music_disc_strad", "music_disc"),
+            Map.entry("minecraft:music_disc_ward", "music_disc"),
+            Map.entry("minecraft:music_disc_11", "music_disc"),
+            Map.entry("minecraft:music_disc_wait", "music_disc"),
+            Map.entry("minecraft:music_disc_otherside", "music_disc"),
+            Map.entry("minecraft:music_disc_5", "music_disc"),
+            Map.entry("minecraft:music_disc_pigstep", "music_disc"),
+            Map.entry("minecraft:music_disc_relic", "music_disc"),
+            Map.entry("minecraft:music_disc_creator", "music_disc"),
+            Map.entry("minecraft:music_disc_creator_music_box", "music_disc"),
+            Map.entry("minecraft:music_disc_precipice", "music_disc"),
 
             // Combat/rare items
-            Map.entry(Items.TOTEM_OF_UNDYING, "totem_of_undying"),
-            Map.entry(Items.TRIDENT, "trident"),
-            Map.entry(Items.ENCHANTED_BOOK, "enchanted_book"),
-            Map.entry(Items.ELYTRA, "elytra"),
-            Map.entry(Items.DRAGON_EGG, "dragon_egg"),
-            Map.entry(Items.NETHER_STAR, "nether_star"),
-            Map.entry(Items.HEART_OF_THE_SEA, "heart_of_the_sea"),
-            Map.entry(Items.ENCHANTED_GOLDEN_APPLE, "enchanted_golden_apple"),
-            Map.entry(Items.DRAGON_HEAD, "dragon_head"),
-            Map.entry(Items.WITHER_SKELETON_SKULL, "wither_skeleton_skull"),
-            Map.entry(Items.BEACON, "beacon"),
-            Map.entry(Items.CONDUIT, "conduit"),
+            Map.entry("minecraft:totem_of_undying", "totem_of_undying"),
+            Map.entry("minecraft:trident", "trident"),
+            Map.entry("minecraft:enchanted_book", "enchanted_book"),
+            Map.entry("minecraft:elytra", "elytra"),
+            Map.entry("minecraft:dragon_egg", "dragon_egg"),
+            Map.entry("minecraft:nether_star", "nether_star"),
+            Map.entry("minecraft:heart_of_the_sea", "heart_of_the_sea"),
+            Map.entry("minecraft:enchanted_golden_apple", "enchanted_golden_apple"),
+            Map.entry("minecraft:dragon_head", "dragon_head"),
+            Map.entry("minecraft:wither_skeleton_skull", "wither_skeleton_skull"),
+            Map.entry("minecraft:beacon", "beacon"),
+            Map.entry("minecraft:conduit", "conduit"),
 
             // Sniffer items
-            Map.entry(Items.SNIFFER_EGG, "sniffer_egg"),
-            Map.entry(Items.PITCHER_POD, "pitcher_pod"),
-            Map.entry(Items.TORCHFLOWER_SEEDS, "torchflower_seeds"),
+            Map.entry("minecraft:sniffer_egg", "sniffer_egg"),
+            Map.entry("minecraft:pitcher_pod", "pitcher_pod"),
+            Map.entry("minecraft:torchflower_seeds", "torchflower_seeds"),
 
             // Treasure
-            Map.entry(Items.DIAMOND, "diamond"),
-            Map.entry(Items.ANCIENT_DEBRIS, "ancient_debris"),
-            Map.entry(Items.NETHERITE_INGOT, "netherite_ingot"),
-            Map.entry(Items.NETHERITE_SCRAP, "netherite_scrap"),
-            Map.entry(Items.EMERALD, "emerald"),
+            Map.entry("minecraft:diamond", "diamond"),
+            Map.entry("minecraft:ancient_debris", "ancient_debris"),
+            Map.entry("minecraft:netherite_ingot", "netherite_ingot"),
+            Map.entry("minecraft:netherite_scrap", "netherite_scrap"),
+            Map.entry("minecraft:emerald", "emerald"),
 
             // Special armor/tools (netherite)
-            Map.entry(Items.NETHERITE_SWORD, "netherite_gear"),
-            Map.entry(Items.NETHERITE_PICKAXE, "netherite_gear"),
-            Map.entry(Items.NETHERITE_AXE, "netherite_gear"),
-            Map.entry(Items.NETHERITE_SHOVEL, "netherite_gear"),
-            Map.entry(Items.NETHERITE_HOE, "netherite_gear"),
-            Map.entry(Items.NETHERITE_HELMET, "netherite_gear"),
-            Map.entry(Items.NETHERITE_CHESTPLATE, "netherite_gear"),
-            Map.entry(Items.NETHERITE_LEGGINGS, "netherite_gear"),
-            Map.entry(Items.NETHERITE_BOOTS, "netherite_gear"),
+            Map.entry("minecraft:netherite_sword", "netherite_gear"),
+            Map.entry("minecraft:netherite_pickaxe", "netherite_gear"),
+            Map.entry("minecraft:netherite_axe", "netherite_gear"),
+            Map.entry("minecraft:netherite_shovel", "netherite_gear"),
+            Map.entry("minecraft:netherite_hoe", "netherite_gear"),
+            Map.entry("minecraft:netherite_helmet", "netherite_gear"),
+            Map.entry("minecraft:netherite_chestplate", "netherite_gear"),
+            Map.entry("minecraft:netherite_leggings", "netherite_gear"),
+            Map.entry("minecraft:netherite_boots", "netherite_gear"),
 
             // Mob drops
-            Map.entry(Items.SHULKER_SHELL, "shulker_shell"),
-            Map.entry(Items.PHANTOM_MEMBRANE, "phantom_membrane"),
-            Map.entry(Items.NAUTILUS_SHELL, "nautilus_shell"),
-            Map.entry(Items.TURTLE_SCUTE, "turtle_scute"),
-            Map.entry(Items.RABBIT_FOOT, "rabbit_foot"),
+            Map.entry("minecraft:shulker_shell", "shulker_shell"),
+            Map.entry("minecraft:phantom_membrane", "phantom_membrane"),
+            Map.entry("minecraft:nautilus_shell", "nautilus_shell"),
+            Map.entry("minecraft:turtle_scute", "turtle_scute"),
+            Map.entry("minecraft:rabbit_foot", "rabbit_foot"),
 
             // Special blocks
-            Map.entry(Items.SPONGE, "sponge"),
-            Map.entry(Items.WET_SPONGE, "sponge")
+            Map.entry("minecraft:sponge", "sponge"),
+            Map.entry("minecraft:wet_sponge", "sponge")
     );
 
     // Very rare items that deserve extra excitement
@@ -105,12 +103,12 @@ public class RareItemListener {
     );
 
     // Milestone items that trigger the item_obtained event for progression tracking
-    private static final Set<Item> MILESTONE_ITEMS = Set.of(
-            Items.ELYTRA,
-            Items.NETHER_STAR,
-            Items.DRAGON_EGG,
-            Items.BEACON,
-            Items.TOTEM_OF_UNDYING
+    private static final Set<String> MILESTONE_ITEMS = Set.of(
+            "minecraft:elytra",
+            "minecraft:nether_star",
+            "minecraft:dragon_egg",
+            "minecraft:beacon",
+            "minecraft:totem_of_undying"
     );
 
     public void onClientTick(MinecraftClient client) {
@@ -131,12 +129,13 @@ public class RareItemListener {
         // Scan main inventory
         for (int i = 0; i < client.player.getInventory().size(); i++) {
             ItemStack stack = client.player.getInventory().getStack(i);
-            if (!stack.isEmpty()) {
-                String category = RARE_ITEMS.get(stack.getItem());
-                if (category != null) {
-                    String itemId = Registries.ITEM.getId(stack.getItem()).toString();
-                    currentCounts.merge(itemId, stack.getCount(), Integer::sum);
-                }
+            if (stack.isEmpty()) {
+                continue;
+            }
+
+            String itemId = Registries.ITEM.getId(stack.getItem()).toString();
+            if (RARE_ITEMS.containsKey(itemId)) {
+                currentCounts.merge(itemId, stack.getCount(), Integer::sum);
             }
         }
 
@@ -156,34 +155,32 @@ public class RareItemListener {
             // Player gained this item
             if (currentCount > lastCount) {
                 int gained = currentCount - lastCount;
-                Item item = Registries.ITEM.get(net.minecraft.util.Identifier.of(itemId));
-                String category = RARE_ITEMS.get(item);
+                String category = RARE_ITEMS.get(itemId);
+                if (category == null) {
+                    continue;
+                }
 
-                if (category != null) {
-                    // Debounce per item type (30 second cooldown)
-                    if (debouncer.shouldTrigger("rare_item_" + itemId, 30000)) {
-                        boolean isVeryRare = VERY_RARE.contains(category);
-                        String simpleName = itemId.replace("minecraft:", "");
+                // Debounce per item type (30 second cooldown)
+                if (debouncer.shouldTrigger("rare_item_" + itemId, 30000)) {
+                    boolean isVeryRare = VERY_RARE.contains(category);
+                    String simpleName = itemId.replace("minecraft:", "");
 
-                        EventPacket packet = new EventPacket("rare_item_found")
-                                .addMetadata("item", simpleName)
-                                .addMetadata("category", category)
-                                .addMetadata("count", gained)
-                                .addMetadata("is_very_rare", isVeryRare);
+                    EventPacket packet = new EventPacket("rare_item_found")
+                            .addMetadata("item", simpleName)
+                            .addMetadata("category", category)
+                            .addMetadata("count", gained)
+                            .addMetadata("is_very_rare", isVeryRare);
 
-                        NetworkManager.getInstance().sendEvent(packet);
-                    }
+                    NetworkManager.getInstance().sendEvent(packet);
+                }
 
-                    // Also emit item_obtained for milestone items (longer cooldown)
-                    if (MILESTONE_ITEMS.contains(item)) {
-                        if (debouncer.shouldTrigger("milestone_" + itemId, 60000)) {
-                            String simpleName = itemId.replace("minecraft:", "");
-                            EventPacket milestonePacket = new EventPacket("item_obtained")
-                                    .addMetadata("item", simpleName);
+                // Also emit item_obtained for milestone items (longer cooldown)
+                if (MILESTONE_ITEMS.contains(itemId) && debouncer.shouldTrigger("milestone_" + itemId, 60000)) {
+                    String simpleName = itemId.replace("minecraft:", "");
+                    EventPacket milestonePacket = new EventPacket("item_obtained")
+                            .addMetadata("item", simpleName);
 
-                            NetworkManager.getInstance().sendEvent(milestonePacket);
-                        }
-                    }
+                    NetworkManager.getInstance().sendEvent(milestonePacket);
                 }
             }
         }

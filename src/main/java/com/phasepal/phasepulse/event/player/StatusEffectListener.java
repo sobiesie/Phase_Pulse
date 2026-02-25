@@ -7,7 +7,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -23,8 +24,8 @@ public class StatusEffectListener {
     private final Set<String> activeHarmfulEffects = new HashSet<>();
     private int tickCounter = 0;
 
-    // Set of harmful effects to track
-    private static final Set<RegistryEntry<StatusEffect>> HARMFUL_EFFECTS = Set.of(
+    // Harmful effects available in 1.20.4
+    private static final Set<StatusEffect> BASE_HARMFUL_EFFECTS = Set.of(
             StatusEffects.POISON,
             StatusEffects.WITHER,
             StatusEffects.HUNGER,
@@ -35,11 +36,15 @@ public class StatusEffectListener {
             StatusEffects.SLOWNESS,
             StatusEffects.LEVITATION,
             StatusEffects.UNLUCK,
-            StatusEffects.DARKNESS,
-            StatusEffects.INFESTED,
-            StatusEffects.OOZING,
-            StatusEffects.WEAVING,
-            StatusEffects.WIND_CHARGED
+            StatusEffects.DARKNESS
+    );
+
+    // 1.21+ effects: checked by id so code still compiles on 1.20.4
+    private static final Set<String> OPTIONAL_121_HARMFUL_EFFECTS = Set.of(
+            "infested",
+            "oozing",
+            "weaving",
+            "wind_charged"
     );
 
     public void onClientTick(MinecraftClient client) {
@@ -59,10 +64,10 @@ public class StatusEffectListener {
 
         // Check all active status effects
         for (StatusEffectInstance effectInstance : client.player.getStatusEffects()) {
-            RegistryEntry<StatusEffect> effect = effectInstance.getEffectType();
+            StatusEffect effect = effectInstance.getEffectType();
+            String effectName = getEffectName(effect);
 
-            if (HARMFUL_EFFECTS.contains(effect)) {
-                String effectName = getEffectName(effect);
+            if (isTrackedHarmfulEffect(effect, effectName)) {
                 currentEffects.add(effectName);
 
                 // Only send event if this is a new effect (not already active)
@@ -77,7 +82,7 @@ public class StatusEffectListener {
                                 .addMetadata("effect", effectName)
                                 .addMetadata("amplifier", amplifier)
                                 .addMetadata("duration_seconds", durationSeconds)
-                                .addMetadata("is_damaging", isDamagingEffect(effect));
+                                .addMetadata("is_damaging", isDamagingEffect(effectName));
 
                         NetworkManager.getInstance().sendEvent(packet);
                     }
@@ -93,15 +98,22 @@ public class StatusEffectListener {
     /**
      * Gets a clean effect name from the registry entry.
      */
-    private String getEffectName(RegistryEntry<StatusEffect> effect) {
-        // Extract the effect ID (e.g., "minecraft:poison" -> "poison")
-        return effect.getIdAsString().replace("minecraft:", "");
+    private String getEffectName(StatusEffect effect) {
+        Identifier id = Registries.STATUS_EFFECT.getId(effect);
+        if (id == null) {
+            return "unknown";
+        }
+        return id.toString().replace("minecraft:", "");
+    }
+
+    private boolean isTrackedHarmfulEffect(StatusEffect effect, String effectName) {
+        return BASE_HARMFUL_EFFECTS.contains(effect) || OPTIONAL_121_HARMFUL_EFFECTS.contains(effectName);
     }
 
     /**
      * Checks if the effect causes direct damage to the player.
      */
-    private boolean isDamagingEffect(RegistryEntry<StatusEffect> effect) {
-        return effect == StatusEffects.POISON || effect == StatusEffects.WITHER;
+    private boolean isDamagingEffect(String effectName) {
+        return "poison".equals(effectName) || "wither".equals(effectName);
     }
 }
