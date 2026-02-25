@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.2.1 - 1.20.1 Compatibility Baseline (2026-02-25)
+
+This branch update retargets the mod from 1.20.4 to 1.20.1.
+
+### Compatibility Updates
+*   Updated build dependencies to Minecraft `1.20.1` (`yarn 1.20.1+build.9`, Fabric API `0.92.5+1.20.1`).
+*   Kept Java target at `17` for 1.20.x compatibility.
+*   Updated `fabric.mod.json` dependency range to `minecraft ~1.20.1`.
+*   Updated mixin compatibility level to `JAVA_17`.
+*   Updated README requirements to match the 1.20.1 branch.
+
+### Notes
+*   Detailed migration notes for this branch are documented in `PORTING_1_20_1.md`.
+
+---
+
 ## v1.2.0 - 1.20.4 Compatibility Port (2026-02-25)
 
 This release updates the mod to run on Minecraft 1.20.4 while preserving existing event behavior where possible.
