@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.2.2 - 1.19.4 Compatibility Baseline (2026-02-25)
+
+This branch update retargets the mod from 1.20.1 to 1.19.4.
+
+### Compatibility Updates
+*   Updated build dependencies to Minecraft `1.19.4` (`yarn 1.19.4+build.2`, Fabric API `0.87.2+1.19.4`).
+*   Kept Java target at `17` for 1.19.x compatibility.
+*   Updated `fabric.mod.json` dependency range to `minecraft ~1.19.4`.
+*   Updated README requirements to match the 1.19.4 branch.
+
+### Notes
+*   Detailed migration notes for this branch are documented in `PORTING_1_19_4.md`.
+
+---
+
 ## v1.2.1 - 1.20.1 Compatibility Baseline (2026-02-25)
 
 This branch update retargets the mod from 1.20.4 to 1.20.1.
