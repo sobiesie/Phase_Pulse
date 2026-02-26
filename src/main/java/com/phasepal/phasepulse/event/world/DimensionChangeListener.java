@@ -17,7 +17,7 @@ public class DimensionChangeListener {
             return;
         }
 
-        String currentDimension = client.level.dimension().location().toString();
+        String currentDimension = client.level.dimension().identifier().toString();
 
         if (lastDimension == null) {
             lastDimension = currentDimension;

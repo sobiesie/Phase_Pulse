@@ -45,7 +45,7 @@ public class BiomeTracker {
         // Get current biome
         Holder<Biome> biomeEntry = client.level.getBiome(client.player.blockPosition());
         String biomeName = biomeEntry.unwrapKey()
-                .map(ResourceKey::location)
+                .map(ResourceKey::identifier)
                 .map(Object::toString)
                 .orElse("minecraft:unknown");
 

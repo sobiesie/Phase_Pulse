@@ -22,7 +22,7 @@ public class FirstNightTracker {
         }
 
         // Only track in overworld
-        if (!client.level.dimension().location().getPath().equals("overworld")) {
+        if (!client.level.dimension().identifier().getPath().equals("overworld")) {
             return;
         }
 

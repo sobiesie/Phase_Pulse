@@ -8,7 +8,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.LogicalSide;
 
@@ -24,12 +23,12 @@ public class BlockPlacedListener {
 			return;
 		}
 
-		MinecraftForge.EVENT_BUS.addListener(this::onRightClickBlock);
+		PlayerInteractEvent.RightClickBlock.BUS.addListener(this::onRightClickBlock);
 		registered = true;
 	}
 
-	private void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-		if (event.getSide() != LogicalSide.CLIENT || event.isCanceled()) {
+	public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+		if (event.getSide() != LogicalSide.CLIENT) {
 			return;
 		}
 

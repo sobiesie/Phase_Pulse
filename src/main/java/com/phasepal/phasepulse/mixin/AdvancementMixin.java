@@ -1,10 +1,9 @@
 package com.phasepal.phasepulse.mixin;
 
 import com.phasepal.phasepulse.event.player.AdvancementListener;
-import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.client.gui.components.toasts.AdvancementToast;
 import net.minecraft.client.gui.components.toasts.Toast;
-import net.minecraft.client.gui.components.toasts.ToastComponent;
+import net.minecraft.client.gui.components.toasts.ToastManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -14,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * Mixin to detect when player earns an advancement (achievement) on client-side.
  * Hooks into the toast notification system to detect advancement completion.
  */
-@Mixin(ToastComponent.class)
+@Mixin(ToastManager.class)
 public class AdvancementMixin {
     @Inject(method = "addToast", at = @At("HEAD"))
     private void onToastAdded(Toast toast, CallbackInfo ci) {
