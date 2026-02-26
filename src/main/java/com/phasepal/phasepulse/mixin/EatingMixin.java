@@ -19,7 +19,7 @@ public class EatingMixin {
         LivingEntity entity = (LivingEntity) (Object) this;
 
         // Get the item being used from the entity's active hand
-        ItemStack stack = entity.getActiveItem();
+        ItemStack stack = entity.getUseItem();
 
         if (stack != null && !stack.isEmpty()) {
             EatingListener.onItemConsumed(entity, stack);

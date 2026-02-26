@@ -131,7 +131,7 @@ public class NetworkManager {
         }
 
         // Get dimension (overworld, the_nether, the_end)
-        String dimension = client.level.dimension().identifier().getPath();
+        String dimension = client.level.dimension().location().getPath();
 
         packet.addMetadata("world_name", worldName);
         packet.addMetadata("world_type", worldType);

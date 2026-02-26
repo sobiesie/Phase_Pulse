@@ -1,104 +1,122 @@
 plugins {
-	id 'java-library'
+	id 'eclipse'
+	id 'idea'
 	id 'maven-publish'
-	id 'net.neoforged.moddev' version "${moddevgradle_version}"
+	id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
 }
 
-version = project.mod_version
-group = project.maven_group
+version = mod_version
+group = mod_group_id
 
 base {
-	archivesName = project.archives_base_name
+	archivesName = archives_base_name
 }
 
-repositories {
-	mavenCentral()
-}
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-neoForge {
-	version = project.neo_version
+minecraft {
+	mappings channel: mapping_channel, version: mapping_version
+	reobf = false
+	copyIdeResources = true
 
 	runs {
+		configureEach {
+			workingDirectory project.file('run')
+			property 'forge.logging.markers', 'REGISTRIES'
+			property 'forge.logging.console.level', 'debug'
+		}
+
 		client {
-			client()
+			property 'forge.enabledGameTestNamespaces', mod_id
 		}
+
 		server {
-			server()
+			property 'forge.enabledGameTestNamespaces', mod_id
+			args '--nogui'
 		}
-		clientData {
-			clientData()
-		}
-	}
 
-	mods {
-		"${project.mod_id}" {
-			sourceSet(sourceSets.main)
+		gameTestServer {
+			property 'forge.enabledGameTestNamespaces', mod_id
+		}
+
+		data {
+			workingDirectory project.file('run-data')
+			args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
 		}
 	}
 }
 
-tasks.register('runData') {
-	group = 'mod development'
-	description = 'Alias for runClientData'
-	dependsOn(tasks.named('runClientData'))
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+repositories {
 }
 
-tasks.register('prepareDataRun') {
-	group = 'mod development'
-	description = 'Alias for prepareClientDataRun'
-	dependsOn(tasks.named('prepareClientDataRun'))
+dependencies {
+	minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+	implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
 }
 
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+tasks.named('processResources', ProcessResources).configure {
+	var replaceProperties = [
+			minecraft_version       : minecraft_version,
+			minecraft_version_range : minecraft_version_range,
+			forge_version           : forge_version,
+			forge_version_range     : forge_version_range,
+			loader_version_range    : loader_version_range,
+			mod_id                  : mod_id,
+			mod_name                : mod_name,
+			mod_license             : mod_license,
+			mod_version             : mod_version,
+			mod_authors             : mod_authors,
+			mod_description         : mod_description,
+			mod_homepage_url        : mod_homepage_url,
+			mod_issue_tracker_url   : mod_issue_tracker_url
+	]
+	inputs.properties replaceProperties
+
+	filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+		expand replaceProperties + [project: project]
 	}
-	withSourcesJar()
+}
+
+tasks.named('jar', Jar).configure {
+	manifest {
+		attributes([
+			'Specification-Title'     : mod_id,
+			'Specification-Vendor'    : mod_authors,
+			'Specification-Version'   : '1',
+			'Implementation-Title'    : project.name,
+			'Implementation-Version'  : project.jar.archiveVersion,
+			'Implementation-Vendor'   : mod_authors,
+			'MixinConfigs'            : 'phase-pulse.mixins.json'
+		])
+	}
+
+	from('LICENSE') {
+		rename { "${it}_${archives_base_name}"}
+	}
+}
+
+publishing {
+	publications {
+		register('mavenJava', MavenPublication) {
+			artifact jar
+		}
+	}
+	repositories {
+	}
 }
 
 tasks.withType(JavaCompile).configureEach {
 	options.encoding = 'UTF-8'
 }
 
-def replaceProperties = [
-		minecraft_version       : project.minecraft_version,
-		minecraft_version_range : project.minecraft_version_range,
-		neo_version             : project.neo_version,
-		neo_version_range       : project.neo_version_range,
-		loader_version_range    : project.loader_version_range,
-		mod_id                  : project.mod_id,
-		mod_name                : project.mod_name,
-		mod_license             : project.mod_license,
-		mod_version             : project.mod_version,
-		mod_authors             : project.mod_authors,
-		mod_description         : project.mod_description,
-		mod_homepage_url        : project.mod_homepage_url,
-		mod_issue_tracker_url   : project.mod_issue_tracker_url
-]
-
-processResources {
-	inputs.properties(replaceProperties)
-
-	filesMatching('META-INF/neoforge.mods.toml') {
-		expand replaceProperties
-	}
+eclipse {
+	synchronizationTasks 'genEclipseRuns'
 }
 
-jar {
-	inputs.property "archivesName", project.base.archivesName
-
-	from("LICENSE") {
-		rename { "${it}_${inputs.properties.archivesName}"}
-	}
-}
-
-publishing {
-	publications {
-		create("mavenJava", MavenPublication) {
-			artifactId = project.archives_base_name
-			from components.java
-		}
-	}
-	repositories {
-	}
+sourceSets.each {
+	def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
+	it.output.resourcesDir = dir
+	it.java.destinationDirectory = dir
 }
