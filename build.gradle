@@ -21,12 +21,15 @@ neoForge {
 	runs {
 		client {
 			client()
+			systemProperty 'forge.logging.console.level', 'debug'
 		}
 		server {
 			server()
+			systemProperty 'forge.logging.console.level', 'debug'
 		}
 		clientData {
 			clientData()
+			systemProperty 'forge.logging.console.level', 'debug'
 		}
 	}
 
@@ -78,6 +81,10 @@ def replaceProperties = [
 
 processResources {
 	inputs.properties(replaceProperties)
+
+	filesMatching('META-INF/mods.toml') {
+		expand replaceProperties
+	}
 
 	filesMatching('META-INF/neoforge.mods.toml') {
 		expand replaceProperties

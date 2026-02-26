@@ -33,7 +33,7 @@ public class BlockPlacedListener {
 			return;
 		}
 
-		Player player = event.getPlayer();
+		Player player = (Player) event.getEntity();
 		Minecraft client = Minecraft.getInstance();
 		if (player == null || client.player == null || player != client.player) {
 			return;

@@ -5,6 +5,7 @@ import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.Biome;
 
 import java.util.HashSet;
@@ -43,7 +44,13 @@ public class BiomeTracker {
 
         // Get current biome
         Holder<Biome> biomeEntry = client.level.getBiome(client.player.blockPosition());
-        String biomeName = biomeEntry.getKey().location().toString();
+        String biomeName = biomeEntry.unwrapKey()
+				.map(ResourceKey::location)
+				.map(Object::toString)
+				.orElse(null);
+        if (biomeName == null) {
+            return;
+        }
 
         // If we're in the same biome as confirmed, nothing to do
         if (biomeName.equals(lastBiome)) {

@@ -4,8 +4,8 @@ import com.phasepal.phasepulse.event.EventDebouncer;
 import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 
@@ -59,8 +59,8 @@ public class StatusEffectListener {
 
         // Check all active status effects
         for (MobEffectInstance effectInstance : client.player.getActiveEffects()) {
-            Holder<MobEffect> effect = effectInstance.getEffect();
-            var effectId = BuiltInRegistries.MOB_EFFECT.getKey(effect.value());
+            MobEffect effect = effectInstance.getEffect();
+            ResourceLocation effectId = BuiltInRegistries.MOB_EFFECT.getKey(effect);
             if (effectId == null) {
                 continue;
             }

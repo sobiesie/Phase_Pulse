@@ -49,6 +49,7 @@ public class NetworkManager {
             return;
         }
 
+        PhasePulse.LOGGER.info("Connecting to Phase Pal at {}:{}", config.host, config.port);
         senderThread = new Thread(packetSender, "PhasePulse-Network");
         senderThread.setDaemon(false); // Non-daemon for clean shutdown
         senderThread.start();
