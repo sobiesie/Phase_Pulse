@@ -1,7 +1,7 @@
 plugins {
 	id 'java-library'
 	id 'maven-publish'
-	id 'net.neoforged.moddev' version "${moddevgradle_version}"
+	id 'net.neoforged.moddev.legacyforge' version "${moddevgradle_version}"
 }
 
 version = project.mod_version
@@ -15,21 +15,18 @@ repositories {
 	mavenCentral()
 }
 
-neoForge {
+legacyForge {
 	version = project.neo_version
 
 	runs {
 		client {
 			client()
-			systemProperty 'forge.logging.console.level', 'debug'
 		}
 		server {
 			server()
-			systemProperty 'forge.logging.console.level', 'debug'
 		}
-		clientData {
-			clientData()
-			systemProperty 'forge.logging.console.level', 'debug'
+		data {
+			data()
 		}
 	}
 
@@ -40,21 +37,9 @@ neoForge {
 	}
 }
 
-tasks.register('runData') {
-	group = 'mod development'
-	description = 'Alias for runClientData'
-	dependsOn(tasks.named('runClientData'))
-}
-
-tasks.register('prepareDataRun') {
-	group = 'mod development'
-	description = 'Alias for prepareClientDataRun'
-	dependsOn(tasks.named('prepareClientDataRun'))
-}
-
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion = JavaLanguageVersion.of(17)
 	}
 	withSourcesJar()
 }

@@ -2,9 +2,9 @@ package com.phasepal.phasepulse;
 
 import com.phasepal.phasepulse.event.EventRegistry;
 import net.minecraft.client.Minecraft;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.event.TickEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +16,7 @@ public class PhasePulse {
 
 	public PhasePulse() {
 		LOGGER.info("PhasePulse mod loaded");
-		NeoForge.EVENT_BUS.addListener(this::onClientTickPost);
+		MinecraftForge.EVENT_BUS.addListener(this::onClientTickPost);
 	}
 
 	private void onClientTickPost(TickEvent.ClientTickEvent event) {
