@@ -5,8 +5,9 @@ import com.phasepal.phasepulse.network.EventPacket;
 import com.phasepal.phasepulse.network.NetworkManager;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.structure.Structure;
 
@@ -65,16 +66,21 @@ public class StructureTracker {
 			return;
 		}
 
-		var structureRegistry = client.level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
-
 		for (Map.Entry<Structure, LongSet> entry : structureReferences.entrySet()) {
 			LongSet references = entry.getValue();
 			if (references == null || references.isEmpty()) {
 				continue;
 			}
 
-			Identifier identifier = structureRegistry.getKey(entry.getKey());
-			String structureId = identifier != null ? identifier.toString() : "unknown";
+			Registry<Structure> structureRegistry = client.level.registryAccess().registry(Registries.STRUCTURE).orElse(null);
+			ResourceLocation identifier = null;
+			if (structureRegistry != null) {
+				identifier = structureRegistry.getKey(entry.getKey());
+			}
+			if (identifier == null) {
+				continue;
+			}
+			String structureId = identifier.toString();
 			String friendlyName = simplifyStructureId(structureId);
 
 			if (friendlyName.equals(lastStructure)) {

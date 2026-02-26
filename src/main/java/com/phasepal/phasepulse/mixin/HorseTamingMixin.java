@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * Mixin to detect when horse-like animals are tamed.
  * Covers: horse, donkey, mule, llama, camel, etc.
  */
-@Mixin(targets = "net.minecraft.world.entity.animal.equine.AbstractHorse")
+@Mixin(targets = "net.minecraft.world.entity.animal.horse.AbstractHorse")
 public class HorseTamingMixin {
 
     @Inject(method = "tameWithName", at = @At("HEAD"))
