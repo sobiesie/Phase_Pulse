@@ -6,7 +6,7 @@ import com.phasepal.phasepulse.network.NetworkManager;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.structure.Structure;
 
@@ -73,7 +73,7 @@ public class StructureTracker {
 				continue;
 			}
 
-			Identifier identifier = structureRegistry.getKey(entry.getKey());
+			ResourceLocation identifier = structureRegistry.getKey(entry.getKey());
 			String structureId = identifier != null ? identifier.toString() : "unknown";
 			String friendlyName = simplifyStructureId(structureId);
 
