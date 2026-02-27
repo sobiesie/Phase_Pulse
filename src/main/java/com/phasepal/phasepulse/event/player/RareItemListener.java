@@ -44,9 +44,6 @@ public class RareItemListener {
             Map.entry(Items.MUSIC_DISC_5, "music_disc"),
             Map.entry(Items.MUSIC_DISC_PIGSTEP, "music_disc"),
             Map.entry(Items.MUSIC_DISC_RELIC, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_CREATOR, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_CREATOR_MUSIC_BOX, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_PRECIPICE, "music_disc"),
 
             // Combat/rare items
             Map.entry(Items.TOTEM_OF_UNDYING, "totem_of_undying"),
@@ -89,7 +86,7 @@ public class RareItemListener {
             Map.entry(Items.SHULKER_SHELL, "shulker_shell"),
             Map.entry(Items.PHANTOM_MEMBRANE, "phantom_membrane"),
             Map.entry(Items.NAUTILUS_SHELL, "nautilus_shell"),
-            Map.entry(Items.TURTLE_SCUTE, "turtle_scute"),
+            Map.entry(Items.SCUTE, "turtle_scute"),
             Map.entry(Items.RABBIT_FOOT, "rabbit_foot"),
 
             // Special blocks

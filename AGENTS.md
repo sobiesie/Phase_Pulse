@@ -1,13 +1,11 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-This repository is a Fabric mod for Minecraft 1.21.11 using Java 21 and Gradle.
+This repository is a mod for Minecraft 1.21.11 using Java 21 and Gradle.
 
 - Main code: `src/main/java/com/phasepal/phasepulse/`
 - Event logic: `src/main/java/com/phasepal/phasepulse/event/` (subpackages: `player`, `combat`, `world`, `milestone`)
-- Mixins: `src/main/java/com/phasepal/phasepulse/mixin/`
 - Networking/config/commands: `network/`, `config/`, `command/`
-- Mod metadata and assets: `src/main/resources/` (`fabric.mod.json`, `phase-pulse.mixins.json`, `assets/phase-pulse/`)
 - Documentation: `README.md`, `EVENTS.md`, `CHANGELOG.md`
 
 ## Build, Test, and Development Commands
