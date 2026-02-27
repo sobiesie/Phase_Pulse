@@ -8,8 +8,9 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.fml.LogicalSide;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.UseItemOnBlockEvent;
 
 /**
  * Listens for block placement attempts on the local client player.
@@ -23,12 +24,12 @@ public class BlockPlacedListener {
 			return;
 		}
 
-		MinecraftForge.EVENT_BUS.addListener(this::onRightClickBlock);
+		NeoForge.EVENT_BUS.addListener(this::onUseItemOnBlock);
 		registered = true;
 	}
 
-	private void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-		if (!event.getLevel().isClientSide()) {
+	private void onUseItemOnBlock(UseItemOnBlockEvent event) {
+		if (event.getSide() != LogicalSide.CLIENT || event.getUsePhase() != UseItemOnBlockEvent.UsePhase.ITEM_AFTER_BLOCK) {
 			return;
 		}
 

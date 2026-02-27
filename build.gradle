@@ -1,7 +1,9 @@
 plugins {
 	id 'java-library'
+	id 'eclipse'
+	id 'idea'
 	id 'maven-publish'
-	id 'net.neoforged.moddev.legacyforge' version "${moddevgradle_version}"
+	id 'net.neoforged.gradle.userdev' version '7.0.116'
 }
 
 version = project.mod_version
@@ -12,40 +14,50 @@ base {
 }
 
 repositories {
+	mavenLocal()
 	mavenCentral()
 }
 
-legacyForge {
-	version = project.neo_version
-
-	runs {
-		client {
-			client()
-		}
-		server {
-			server()
-		}
-		data {
-			data()
-		}
+runs {
+	configureEach {
+		systemProperty 'forge.logging.markers', 'REGISTRIES'
+		systemProperty 'forge.logging.console.level', 'debug'
+		modSource project.sourceSets.main
 	}
 
-	mods {
-		"${project.mod_id}" {
-			sourceSet(sourceSets.main)
-		}
+	client {
+		systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+	}
+
+	server {
+		systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+		programArgument '--nogui'
+	}
+
+	gameTestServer {
+		systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+	}
+
+	data {
+		programArguments.addAll '--mod', project.mod_id, '--all',
+				'--output', file('src/generated/resources/').getAbsolutePath(),
+				'--existing', file('src/main/resources/').getAbsolutePath()
 	}
 }
 
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
+	toolchain.languageVersion = JavaLanguageVersion.of(17)
 	withSourcesJar()
 }
 
 tasks.withType(JavaCompile).configureEach {
 	options.encoding = 'UTF-8'
+}
+
+dependencies {
+	implementation "net.neoforged:neoforge:${project.neo_version}"
 }
 
 def replaceProperties = [
@@ -61,18 +73,15 @@ def replaceProperties = [
 		mod_authors             : project.mod_authors,
 		mod_description         : project.mod_description,
 		mod_homepage_url        : project.mod_homepage_url,
-		mod_issue_tracker_url   : project.mod_issue_tracker_url
+		mod_issue_tracker_url   : project.mod_issue_tracker_url,
+		pack_format_number      : project.pack_format_number
 ]
 
-processResources {
+tasks.withType(ProcessResources).configureEach {
 	inputs.properties(replaceProperties)
 
-	filesMatching('META-INF/mods.toml') {
-		expand replaceProperties
-	}
-
-	filesMatching('META-INF/neoforge.mods.toml') {
-		expand replaceProperties
+	filesMatching(['META-INF/mods.toml', 'META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
+		expand replaceProperties + [project: project]
 	}
 }
 
