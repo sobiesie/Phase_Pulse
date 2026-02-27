@@ -43,7 +43,7 @@ public class BiomeTracker {
 
         // Get current biome
         Holder<Biome> biomeEntry = client.level.getBiome(client.player.blockPosition());
-        String biomeName = biomeEntry.getKey().identifier().toString();
+        String biomeName = biomeEntry.getKey().location().toString();
 
         // If we're in the same biome as confirmed, nothing to do
         if (biomeName.equals(lastBiome)) {
