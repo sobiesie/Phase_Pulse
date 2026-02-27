@@ -7,7 +7,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.Registries;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -24,7 +24,7 @@ public class StatusEffectListener {
     private int tickCounter = 0;
 
     // Set of harmful effects to track
-    private static final Set<RegistryEntry<StatusEffect>> HARMFUL_EFFECTS = Set.of(
+    private static final Set<StatusEffect> HARMFUL_EFFECTS = Set.of(
             StatusEffects.POISON,
             StatusEffects.WITHER,
             StatusEffects.HUNGER,
@@ -35,11 +35,7 @@ public class StatusEffectListener {
             StatusEffects.SLOWNESS,
             StatusEffects.LEVITATION,
             StatusEffects.UNLUCK,
-            StatusEffects.DARKNESS,
-            StatusEffects.INFESTED,
-            StatusEffects.OOZING,
-            StatusEffects.WEAVING,
-            StatusEffects.WIND_CHARGED
+            StatusEffects.DARKNESS
     );
 
     public void onClientTick(MinecraftClient client) {
@@ -59,7 +55,7 @@ public class StatusEffectListener {
 
         // Check all active status effects
         for (StatusEffectInstance effectInstance : client.player.getStatusEffects()) {
-            RegistryEntry<StatusEffect> effect = effectInstance.getEffectType();
+            StatusEffect effect = effectInstance.getEffectType();
 
             if (HARMFUL_EFFECTS.contains(effect)) {
                 String effectName = getEffectName(effect);
@@ -93,15 +89,15 @@ public class StatusEffectListener {
     /**
      * Gets a clean effect name from the registry entry.
      */
-    private String getEffectName(RegistryEntry<StatusEffect> effect) {
+    private String getEffectName(StatusEffect effect) {
         // Extract the effect ID (e.g., "minecraft:poison" -> "poison")
-        return effect.getIdAsString().replace("minecraft:", "");
+        return Registries.STATUS_EFFECT.getId(effect).toString().replace("minecraft:", "");
     }
 
     /**
      * Checks if the effect causes direct damage to the player.
      */
-    private boolean isDamagingEffect(RegistryEntry<StatusEffect> effect) {
+    private boolean isDamagingEffect(StatusEffect effect) {
         return effect == StatusEffects.POISON || effect == StatusEffects.WITHER;
     }
 }
