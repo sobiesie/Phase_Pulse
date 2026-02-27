@@ -8,6 +8,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,9 +45,6 @@ public class RareItemListener {
             Map.entry(Items.MUSIC_DISC_5, "music_disc"),
             Map.entry(Items.MUSIC_DISC_PIGSTEP, "music_disc"),
             Map.entry(Items.MUSIC_DISC_RELIC, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_CREATOR, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_CREATOR_MUSIC_BOX, "music_disc"),
-            Map.entry(Items.MUSIC_DISC_PRECIPICE, "music_disc"),
 
             // Combat/rare items
             Map.entry(Items.TOTEM_OF_UNDYING, "totem_of_undying"),
@@ -156,7 +154,8 @@ public class RareItemListener {
             // Player gained this item
             if (currentCount > lastCount) {
                 int gained = currentCount - lastCount;
-                Item item = Registries.ITEM.get(net.minecraft.util.Identifier.of(itemId));
+                Identifier identifier = parseIdentifier(itemId);
+                Item item = Registries.ITEM.get(identifier);
                 String category = RARE_ITEMS.get(item);
 
                 if (category != null) {
@@ -199,5 +198,13 @@ public class RareItemListener {
     public void reset() {
         lastItemCounts.clear();
         initialized = false;
+    }
+
+    private Identifier parseIdentifier(String itemId) {
+        int separator = itemId.indexOf(':');
+        if (separator > 0 && separator < itemId.length() - 1) {
+            return Identifier.of(itemId.substring(0, separator), itemId.substring(separator + 1));
+        }
+        return Identifier.of("minecraft", itemId);
     }
 }
