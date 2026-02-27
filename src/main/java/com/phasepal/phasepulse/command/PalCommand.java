@@ -12,6 +12,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
+import net.minecraftforge.common.MinecraftForge;
 
 import java.util.regex.Pattern;
 
@@ -32,7 +33,7 @@ public final class PalCommand {
 			return;
 		}
 
-		RegisterClientCommandsEvent.BUS.addListener(PalCommand::onRegisterClientCommands);
+		MinecraftForge.EVENT_BUS.addListener(PalCommand::onRegisterClientCommands);
 		registered = true;
 		PhasePulse.LOGGER.info("Registered /pal command");
 	}

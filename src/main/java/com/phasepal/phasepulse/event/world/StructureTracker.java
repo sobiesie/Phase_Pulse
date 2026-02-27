@@ -65,7 +65,7 @@ public class StructureTracker {
 			return;
 		}
 
-		var structureRegistry = client.level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
+		var structureRegistry = client.level.registryAccess().registryOrThrow(Registries.STRUCTURE);
 
 		for (Map.Entry<Structure, LongSet> entry : structureReferences.entrySet()) {
 			LongSet references = entry.getValue();

@@ -2,6 +2,7 @@ package com.phasepal.phasepulse;
 
 import com.phasepal.phasepulse.event.EventRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
@@ -14,10 +15,14 @@ public class PhasePulse {
 
 	public PhasePulse() {
 		PhasePulseClient.initialize();
-		TickEvent.ClientTickEvent.Post.BUS.addListener(this::onClientTickPost);
+		MinecraftForge.EVENT_BUS.addListener(this::onClientTickPost);
 	}
 
-	private void onClientTickPost(TickEvent.ClientTickEvent.Post event) {
+	private void onClientTickPost(TickEvent.ClientTickEvent event) {
+		if (event.phase != TickEvent.Phase.END) {
+			return;
+		}
+
 		EventRegistry.onClientTick(Minecraft.getInstance());
 	}
 }
